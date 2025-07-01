@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import LoginPage from "./onboarding/pages/LoginInPage";
+import ManualRegistrationPage from "./onboarding/pages/ManualRegistrationPage";
 
 const theme = createTheme({
     palette: {
@@ -15,7 +16,7 @@ function App() {
       <div>
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <LoginPage/>
+            <ManualRegistrationPage/>
         </ThemeProvider>
       </div>
 
