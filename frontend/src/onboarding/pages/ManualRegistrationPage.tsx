@@ -37,8 +37,9 @@ export default function ManualRegistrationPage() {
 
     <form>
     <TextField fullWidth label="Email" variant="outlined" margin="normal" />
-        <TextField fullWidth label="Firstname" variant="outlined" margin="normal" />
+        <TextField fullWidth label="Firstname" variant="outlined" margin="normal"/>
         <TextField fullWidth label="Lastname" variant="outlined" margin="normal" />
+        <TextField fullWidth label="Username" variant="outlined" margin="normal" />
         <TextField fullWidth label="Password" variant="outlined" type="password" margin="normal" />
 
         <Button
