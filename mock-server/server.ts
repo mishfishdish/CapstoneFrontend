@@ -5,11 +5,15 @@ import {
     createUserHandler, inviteClubHandler,
     signUserHandler
 } from "./handlers/onboarding/OnboardingHandlers.ts";
+import {resolveStubToken} from "./middleware/token.ts";
 
 
 const app = express()
 const PORT = 4000
 
+
+// Apply token middleware globally
+app.use(resolveStubToken())
 
 // Onboarding endpoints
 app.post('/api/auth', createUserHandler)

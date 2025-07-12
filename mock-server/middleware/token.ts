@@ -5,14 +5,12 @@
  *
  * Adds `req.stubContext = { token, isFallback }`
  */
-export function resolveStubToken(allowedTokens: string[]) {
+export function resolveStubToken() {
     return (req: any, res: any, next: any) => {
         const token = req.headers['x-stub-token'] as string || 'default'
-
         req.stubContext = {
             token,
         }
-
         next()
     }
 }
