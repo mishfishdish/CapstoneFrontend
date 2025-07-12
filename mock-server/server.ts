@@ -4,7 +4,7 @@ import {
     createClubHandler,
     createUserHandler, inviteClubHandler,
     signUserHandler
-} from "./handlers/onboarding/OnboardingHandlers.js";
+} from "./handlers/onboarding/OnboardingHandlers.ts";
 
 
 const app = express()

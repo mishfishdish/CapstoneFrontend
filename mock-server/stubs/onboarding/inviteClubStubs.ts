@@ -1,5 +1,5 @@
 export const inviteClubStubs: Record<string, () => any> = {
-    create_user_400: () => ({
+    invite_club_400: () => ({
         status: 400,
         response: {}
     }),

@@ -1,9 +1,9 @@
-import {createHandler} from "../utlity/createHandler.js";
-import {addToClubStubs} from "../../stubs/onboarding/addToClubStubs.js";
-import {createClubsStubs} from "../../stubs/onboarding/createClubStubs.js";
-import {createUserStubs} from "../../stubs/onboarding/createUserStubs.js";
-import {signUserStubs} from "../../stubs/onboarding/signUserStubs.js";
-import {inviteClubStubs} from "../../stubs/onboarding/inviteClubStubs.js";
+import {createHandler} from "../utlity/createHandler.ts";
+import {addToClubStubs} from "../../stubs/onboarding/addToClubStubs.ts";
+import {createClubsStubs} from "../../stubs/onboarding/createClubStubs.ts";
+import {createUserStubs} from "../../stubs/onboarding/createUserStubs.ts";
+import {signUserStubs} from "../../stubs/onboarding/signUserStubs.ts";
+import {inviteClubStubs} from "../../stubs/onboarding/inviteClubStubs.ts";
 
 
 export const addClubHandler = () => createHandler(addToClubStubs);

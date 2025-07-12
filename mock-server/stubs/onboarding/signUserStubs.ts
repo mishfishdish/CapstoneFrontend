@@ -1,5 +1,5 @@
 export const signUserStubs: Record<string, () => any> = {
-    create_user_400: () => ({
+    sign_user_400: () => ({
         status: 400,
         response: {}
     }),
