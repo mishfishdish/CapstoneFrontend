@@ -16,7 +16,7 @@ function App() {
       <div>
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <ManualRegistrationPage/>
+            <LoginPage/>
         </ThemeProvider>
       </div>
 

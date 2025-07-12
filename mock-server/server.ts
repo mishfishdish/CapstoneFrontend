@@ -1,20 +1,24 @@
 import express from 'express'
-import { userHandler } from './handlers/user'
-import { resolveStubToken } from './middleware/token'
+import {
+    addClubHandler,
+    createClubHandler,
+    createUserHandler, inviteClubHandler,
+    signUserHandler
+} from "./handlers/onboarding/OnboardingHandlers.js";
+
 
 const app = express()
 const PORT = 4000
 
-// Define a shared whitelist of allowed tokens
-const allowedTokens = ['admin', 'guest', 'premium']
 
-// Apply token middleware globally
-app.use(resolveStubToken(allowedTokens))
-
-// Register your endpoint handlers
-app.get('/api/user', userHandler)
+// Onboarding endpoints
+app.post('/api/auth', createUserHandler)
+app.post('/api/auth/login', signUserHandler)
+app.post('/api/clubs', createClubHandler)
+app.post('/api/clubs/user', addClubHandler)
+app.post('/api/clubs/invite', inviteClubHandler)
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`🟢 Mock API Server running at http://localhost:${PORT}`)
+    console.log(`Mock API Server running at http://localhost:${PORT}`)
 })

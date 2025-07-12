@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express'
 
 /**
  * Middleware to extract a stub token from the request headers
@@ -7,13 +6,11 @@ import { Request, Response, NextFunction } from 'express'
  * Adds `req.stubContext = { token, isFallback }`
  */
 export function resolveStubToken(allowedTokens: string[]) {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: any, res: any, next: any) => {
         const token = req.headers['x-stub-token'] as string || 'default'
-        const isFallback = !allowedTokens.includes(token)
 
         req.stubContext = {
             token,
-            isFallback
         }
 
         next()
