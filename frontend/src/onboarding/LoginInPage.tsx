@@ -5,6 +5,7 @@ import {useTheme} from '@mui/material/styles';
 import {useNavigate} from 'react-router-dom';
 import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
 import config from "../../config.ts";
+import {userIdSignal} from ".././store/sessionSignal.ts";
 
 export default function LoginPage() {
     useTheme();
@@ -26,6 +27,8 @@ export default function LoginPage() {
             });
 
             if (response.ok) {
+                const data = await response.json(); // ⬅️ Parse JSON response
+                userIdSignal.value = data.userId
                 navigate(PAGE_CLUB_SETTINGS);
             } else {
                 setError(true);

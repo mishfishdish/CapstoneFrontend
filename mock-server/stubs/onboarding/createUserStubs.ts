@@ -5,6 +5,8 @@ export const createUserStubs: Record<string, () => any> = {
     }),
     default: () => ({
         status: 200,
-        response: {}
+        response: {
+            userId: "user"
+        }
     }),
 }

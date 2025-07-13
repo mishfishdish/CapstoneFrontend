@@ -5,6 +5,8 @@ export const signUserStubs: Record<string, () => any> = {
     }),
     default: () => ({
         status: 200,
-        response: {}
+        response: {
+            userId: "user"
+        }
     }),
 }

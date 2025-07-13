@@ -4,6 +4,7 @@ import {Alert, Box, Button, Paper, Snackbar, TextField, Typography} from '@mui/m
 import {useNavigate} from "react-router-dom";
 import {PAGE_REGISTRATION_SUCCESS} from "../PathConstants.tsx";
 import config from "../../config.ts";
+import {userIdSignal} from ".././store/sessionSignal.ts";
 
 
 export default function ManualRegistrationPage() {
@@ -35,6 +36,8 @@ export default function ManualRegistrationPage() {
             });
 
             if (response.ok) {
+                const data = await response.json(); // ⬅️ Parse JSON response
+                userIdSignal.value = data.userId
                 navigate(PAGE_REGISTRATION_SUCCESS);
             } else {
                 setShowError(true);

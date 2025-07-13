@@ -6,6 +6,7 @@ import {
     createClubHandler,
     createUserHandler,
     inviteClubHandler,
+    listClubsHandler,
     signUserHandler
 } from "./handlers/onboarding/OnboardingHandlers.ts";
 import {resolveStubToken} from "./middleware/token.ts";
@@ -30,6 +31,8 @@ app.post('/api/auth/login', signUserHandler)
 app.post('/api/clubs', createClubHandler)
 app.post('/api/clubs/user', addClubHandler)
 app.post('/api/clubs/invite', inviteClubHandler)
+app.get('/api/users/:userId/clubs', listClubsHandler);
+
 
 // Start the server
 app.listen(PORT, () => {
