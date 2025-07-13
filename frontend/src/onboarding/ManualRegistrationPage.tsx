@@ -2,7 +2,7 @@
 import React from 'react';
 import {Box, Button, Paper, TextField, Typography} from '@mui/material';
 import {useNavigate} from "react-router-dom";
-import {PAGE_REGISTRATION_SUCCESS} from "../../PathConstants.tsx";
+import {PAGE_REGISTRATION_SUCCESS} from "../PathConstants.tsx";
 
 export default function ManualRegistrationPage() {
     const navigate = useNavigate(); // ✅ initialize
@@ -49,7 +49,7 @@ export default function ManualRegistrationPage() {
                     <Button
                         fullWidth
                         variant="contained"
-                        onClick={() => navigate(PAGE_REGISTRATION_SUCCESS)} // ✅ login
+                        onClick={() => navigate(PAGE_REGISTRATION_SUCCESS)} //
                         sx={{
                             mt: 2,
                             textTransform: 'none',

@@ -1,6 +1,6 @@
 import {Box, Button, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
-import {PAGE_CLUB_SETTINGS} from "../../PathConstants.tsx";
+import {PAGE_CLUB_SETTINGS} from "../PathConstants.tsx";
 
 export default function RegistrationSuccessPage() {
     const navigate = useNavigate();

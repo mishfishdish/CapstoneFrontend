@@ -2,7 +2,7 @@
 import {Button, Container, FormControl, InputLabel, MenuItem, Paper, Select, Typography,} from '@mui/material';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CreateIcon from '@mui/icons-material/Create';
-import LayoutContainer from "../../common/LayoutContainer";
+import LayoutContainer from "../common/LayoutContainer.tsx";
 
 export default function SettingsPage() {
     return (
