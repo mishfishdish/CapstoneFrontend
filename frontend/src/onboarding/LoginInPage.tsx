@@ -4,6 +4,7 @@ import {Alert, Box, Button, Container, Snackbar, Stack, TextField, Typography} f
 import {useTheme} from '@mui/material/styles';
 import {useNavigate} from 'react-router-dom';
 import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
+import config from "../../config.ts";
 
 export default function LoginPage() {
     useTheme();
@@ -15,7 +16,7 @@ export default function LoginPage() {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('api/auth/login', {
+            const response = await fetch(config.apiBaseUrl + '/auth/login', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
