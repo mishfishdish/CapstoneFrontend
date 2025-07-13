@@ -1,22 +1,31 @@
-// pages/AddMembersPage.jsx
 import {Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography,} from '@mui/material';
 import {useState} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import CancelIcon from '@mui/icons-material/Cancel';
-import LayoutContainer from "../../common/LayoutContainer";
+import EditIcon from '@mui/icons-material/Edit';
+import LayoutContainer from "../common/LayoutContainer.tsx";
 
-export default function AddMembersPage() {
-    const [invitees, setInvitees] = useState([
-        {email: '', role: 'Member'},
+// ✅ Define Invitee type
+type Invitee = {
+    email: string;
+    role: 'Member' | 'Admin';
+};
+
+export default function CreateClubPage() {
+    const [invitees, setInvitees] = useState<Invitee[]>([
         {email: '', role: 'Member'},
     ]);
+    const [clubName, setClubName] = useState('');
+    const [clubDesc, setClubDesc] = useState('');
 
-    const handleInviteChange = (index, field, value) => {
+    // ✅ Fully typed handler
+    const handleInviteChange = (
+        index: number,
+        field: keyof Invitee,
+        value: Invitee[keyof Invitee]
+    ) => {
         const updated = [...invitees];
-        // @ts-ignore
-        updated[index][field] = value;
+        updated[index] = {...updated[index], [field]: value};
         setInvitees(updated);
     };
 
@@ -24,7 +33,7 @@ export default function AddMembersPage() {
         setInvitees([...invitees, {email: '', role: 'Member'}]);
     };
 
-    const handleRemoveInvitee = (index) => {
+    const handleRemoveInvitee = (index: number) => {
         const updated = [...invitees];
         updated.splice(index, 1);
         setInvitees(updated);
@@ -34,8 +43,13 @@ export default function AddMembersPage() {
         // e.g. navigate back
     };
 
-    const handleSubmit = () => {
-        // Submit logic here
+    const handleCreate = () => {
+        console.log('Creating club:', {
+            clubName,
+            clubDesc,
+            invitees,
+        });
+        // API submit logic
     };
 
     return (
@@ -52,8 +66,26 @@ export default function AddMembersPage() {
                 }}
             >
                 <Typography variant="h5" fontWeight="bold" color="white" gutterBottom>
-                    Add Members To Club
+                    Create A Club
                 </Typography>
+
+                <TextField
+                    fullWidth
+                    label="Club Name"
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                    variant="filled"
+                    sx={{mb: 2, bgcolor: 'white', borderRadius: 1}}
+                />
+
+                <TextField
+                    fullWidth
+                    label="Club Description"
+                    value={clubDesc}
+                    onChange={(e) => setClubDesc(e.target.value)}
+                    variant="filled"
+                    sx={{mb: 4, bgcolor: 'white', borderRadius: 1}}
+                />
 
                 <Typography variant="subtitle1" fontWeight="bold" color="white" gutterBottom>
                     Invite Members
@@ -72,7 +104,9 @@ export default function AddMembersPage() {
                             />
                             <Select
                                 value={invitee.role}
-                                onChange={(e) => handleInviteChange(index, 'role', e.target.value)}
+                                onChange={(e) =>
+                                    handleInviteChange(index, 'role', e.target.value as 'Member' | 'Admin')
+                                }
                                 variant="filled"
                                 sx={{minWidth: 100, bgcolor: 'white', borderRadius: 1}}
                             >
@@ -110,8 +144,8 @@ export default function AddMembersPage() {
                     <Button
                         fullWidth
                         variant="outlined"
-                        startIcon={<CancelIcon/>}
                         onClick={handleCancel}
+                        startIcon={<DeleteIcon/>}
                         sx={{
                             color: 'white',
                             borderColor: 'white',
@@ -126,8 +160,8 @@ export default function AddMembersPage() {
                     <Button
                         fullWidth
                         variant="contained"
-                        startIcon={<GroupAddIcon/>}
-                        onClick={handleSubmit}
+                        onClick={handleCreate}
+                        startIcon={<EditIcon/>}
                         sx={{
                             textTransform: 'none',
                             bgcolor: 'grey.900',
@@ -136,7 +170,7 @@ export default function AddMembersPage() {
                             },
                         }}
                     >
-                        Add
+                        Create
                     </Button>
                 </Stack>
             </Box>

@@ -1,5 +1,5 @@
 import {Route, Routes} from 'react-router-dom';
-import RegistrationSuccessPage from "./onboarding/pages/RegistrationSuccessPage.tsx";
+import RegistrationSuccessPage from "./onboarding/RegistrationSuccessPage.tsx";
 import {
     PAGE_ADD_MEMBER,
     PAGE_CLUB_SETTINGS,
@@ -8,11 +8,11 @@ import {
     PAGE_REGISTRATION,
     PAGE_REGISTRATION_SUCCESS
 } from "./PathConstants.tsx";
-import LoginPage from "./onboarding/pages/LoginInPage.tsx";
-import AddMembersPage from "./onboarding/pages/AddMembersToClubPage.tsx";
-import SettingsPage from "./onboarding/pages/ClubSettingPage.tsx";
-import CreateClubPage from "./onboarding/pages/CreateAClubPage.tsx";
-import ManualRegistrationPage from "./onboarding/pages/ManualRegistrationPage.tsx";
+import LoginPage from "./onboarding/LoginInPage.tsx";
+import AddMembersPage from "./onboarding/AddMembersToClubPage.tsx";
+import SettingsPage from "./onboarding/ClubSettingPage.tsx";
+import CreateClubPage from "./onboarding/CreateAClubPage.tsx";
+import ManualRegistrationPage from "./onboarding/ManualRegistrationPage.tsx";
 
 
 export default function AppRoutes() {

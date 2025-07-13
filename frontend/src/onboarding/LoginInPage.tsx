@@ -1,8 +1,9 @@
+// @ts-ignore
 import React from 'react';
 import {Box, Button, Container, Stack, TextField, Typography} from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 import {useNavigate} from 'react-router-dom';
-import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../../PathConstants.tsx";
+import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
 
 export default function LoginPage() {
     useTheme();
