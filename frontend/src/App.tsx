@@ -1,6 +1,6 @@
 import './App.css'
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
-import AppRoutes from "./AppRoutes";
+import AppRoutes from "./AppRoutes.tsx";
 
 const theme = createTheme({
     palette: {

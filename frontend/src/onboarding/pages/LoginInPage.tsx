@@ -1,8 +1,12 @@
-import {Box, Button, Container, Stack, TextField, Typography, useTheme} from "@mui/material";
-
+import React from 'react';
+import {Box, Button, Container, Stack, TextField, Typography} from '@mui/material';
+import {useTheme} from '@mui/material/styles';
+import {useNavigate} from 'react-router-dom';
+import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../../PathConstants.tsx";
 
 export default function LoginPage() {
-    const theme = useTheme();
+    useTheme();
+    const navigate = useNavigate();
 
     return (
         <Box
@@ -12,107 +16,93 @@ export default function LoginPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(to right, #2c3e50, #4ca1af)',
+                background: '#3c4a5d',
+                backgroundImage: `url('/background.svg')`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right center',
+                backgroundSize: 'contain',
                 px: 2,
             }}
         >
             <Container
-                maxWidth="md"
+                maxWidth="sm"
                 sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    borderRadius: 4,
+                    bgcolor: '#fff',
+                    borderRadius: 3,
                     p: 4,
                     boxShadow: 3,
                 }}
             >
-                {/* Logo + Heading */}
                 <Box
                     sx={{
+                        width: 100,
+                        height: 100,
+                        backgroundColor: '#00e0ff',
+                        borderRadius: 2,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        textAlign: 'center',
-                        color: 'white',
-                        mb: { xs: 4, md: 0 },
-                        width: { xs: '100%', md: '40%' },
+                        justifyContent: 'center',
+                        fontSize: 48,
+                        fontWeight: 'bold',
+                        color: '#1a1a1a',
+                        mb: 2,
                     }}
                 >
-                    <Box
+                    Σ
+                </Box>
+                <Typography variant="h4" fontWeight="bold" gutterBottom>
+                    SigmaSchedule
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={3}>
+                    Simplifying Club Event Management
+                </Typography>
+
+                <TextField
+                    label="Username"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                />
+                <TextField
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                />
+                <Stack direction="row" spacing={2} sx={{mt: 2, width: '100%'}}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => navigate(PAGE_REGISTRATION)}
                         sx={{
-                            width: 120,
-                            height: 120,
-                            backgroundColor: '#00e0ff',
-                            borderRadius: 3,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 64,
-                            fontWeight: 'bold',
-                            color: '#1a1a1a',
-                            mb: 2,
+                            textTransform: 'none',
+                            bgcolor: 'grey.900',
+                            '&:hover': {
+                                bgcolor: 'grey.800',
+                            },
                         }}
                     >
-                        Σ
-                    </Box>
-                    <Typography variant="h4" fontWeight="bold">
-                        SigmaSchedule
-                    </Typography>
-                    <Typography variant="subtitle1" color="rgba(255,255,255,0.8)">
-                        Simplifying Club Event Management
-                    </Typography>
-                </Box>
-
-                {/* Login Form */}
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                        width: { xs: '100%', md: '50%' },
-                    }}
-                >
-                    <TextField
-                        label="Username"
-                        variant="filled"
+                        New user
+                    </Button>
+                    <Button
+                        variant="contained"
                         fullWidth
-                        InputProps={{ disableUnderline: true }}
-                        sx={{ backgroundColor: 'white', borderRadius: 1 }}
-                    />
-                    <TextField
-                        label="Password"
-                        type="password"
-                        variant="filled"
-                        fullWidth
-                        InputProps={{ disableUnderline: true }}
-                        sx={{ backgroundColor: 'white', borderRadius: 1 }}
-                    />
-                    <Stack direction="row" spacing={2}>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            sx={{
-                                textTransform: 'none',
-                                bgcolor: 'black',
-                            }}
-                        >
-                            New user
-                        </Button>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            sx={{
-                                textTransform: 'none',
-                                bgcolor: 'black',
-                            }}
-                        >
-                            Log in
-                        </Button>
-                    </Stack>
-                </Box>
+                        onClick={() => navigate(PAGE_CLUB_SETTINGS)}
+                        sx={{
+                            textTransform: 'none',
+                            bgcolor: 'grey.900',
+                            '&:hover': {
+                                bgcolor: 'grey.800',
+                            },
+                        }}
+                    >
+                        Log in
+                    </Button>
+                </Stack>
             </Container>
         </Box>
     );

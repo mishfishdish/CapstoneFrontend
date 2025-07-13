@@ -1,0 +1,6 @@
+export const PAGE_LOGIN = '/'
+export const PAGE_ADD_MEMBER = '/addMember'
+export const PAGE_CLUB_SETTINGS = '/clubSettings'
+export const PAGE_CREATE_CLUB = '/createClub'
+export const PAGE_REGISTRATION_SUCCESS = '/registerSuccess'
+export const PAGE_REGISTRATION = '/register'
