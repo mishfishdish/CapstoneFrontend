@@ -31,8 +31,10 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          IMAGE="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend-app:${{ github.sha }}"
+          echo "Building and pushing image: $IMAGE"
+          docker build -t $IMAGE .
+          docker push $IMAGE
 
       - name: SSH into EC2 and deploy container
         uses: appleboy/ssh-action@v1.0.0
@@ -41,10 +43,7 @@ jobs:
           username: ${{ secrets.FRONTEND_EC2_USER }}
           key: ${{ secrets.FRONTEND_EC2_KEY }}
           script: |
-            echo "ECR_REGISTRY: $ECR_REGISTRY"
-            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-            echo "IMAGE_TAG: $IMAGE_TAG"
-            IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            IMAGE="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend-app:${{ github.sha }}"
             echo "Running container from image: $IMAGE"
             docker pull $IMAGE
             docker stop frontend || true
