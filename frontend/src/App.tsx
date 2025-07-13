@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import './App.css'
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
-import LoginPage from "./onboarding/pages/LoginInPage";
-import ManualRegistrationPage from "./onboarding/pages/ManualRegistrationPage";
+import AppRoutes from "./AppRoutes";
 
 const theme = createTheme({
     palette: {
@@ -11,17 +9,17 @@ const theme = createTheme({
 });
 
 function App() {
-  return (
-    <>
-      <div>
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <LoginPage/>
-        </ThemeProvider>
-      </div>
+    return (
+        <>
+            <div>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline/>
+                    <AppRoutes/>
+                </ThemeProvider>
+            </div>
 
-    </>
-  )
+        </>
+    )
 }
 
 export default App
