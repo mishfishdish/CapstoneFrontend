@@ -1,5 +1,5 @@
 export const listClubStubs: Record<string, () => any> = {
-    create_club_400: () => ({
+    list_club_400: () => ({
         status: 400,
         response: {}
     }),

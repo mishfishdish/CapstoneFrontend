@@ -31,6 +31,7 @@ app.post('/api/auth/login', signUserHandler)
 app.post('/api/clubs', createClubHandler)
 app.post('/api/clubs/user', addClubHandler)
 app.post('/api/clubs/invite', inviteClubHandler)
+// get clubs endpoints
 app.get('/api/users/:userId/clubs', listClubsHandler);
 
 

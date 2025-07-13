@@ -1,9 +1,11 @@
-import {Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography,} from '@mui/material';
+import {Alert, Box, Button, IconButton, MenuItem, Select, Snackbar, Stack, TextField, Typography,} from '@mui/material';
 import {useState} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import LayoutContainer from "../common/LayoutContainer.tsx";
+import {useNavigate} from "react-router-dom";
+import {clubIdSignal} from "../store/sessionSignal.ts";
 
 // ✅ Define Invitee type
 type Invitee = {
@@ -12,11 +14,14 @@ type Invitee = {
 };
 
 export default function CreateClubPage() {
+    const navigate = useNavigate();
     const [invitees, setInvitees] = useState<Invitee[]>([
         {email: '', role: 'Member'},
     ]);
     const [clubName, setClubName] = useState('');
     const [clubDesc, setClubDesc] = useState('');
+    const [failures, setFailures] = useState<string[]>([]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     // ✅ Fully typed handler
     const handleInviteChange = (
@@ -40,16 +45,56 @@ export default function CreateClubPage() {
     };
 
     const handleCancel = () => {
-        // e.g. navigate back
+        navigate(-1)
     };
 
-    const handleCreate = () => {
-        console.log('Creating club:', {
-            clubName,
-            clubDesc,
-            invitees,
-        });
-        // API submit logic
+    const handleCreate = async () => {
+
+        try {
+            // Step 1: Create the club
+            const clubResponse = await fetch('/api/clubs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name: clubName, description: clubDesc}),
+            });
+
+            if (!clubResponse.ok) {
+                setFailures([...failures, "Failed to Create Club"])
+                setSnackbarOpen(true);
+                return; // Don't proceed if club creation fails
+            }
+
+            const {clubId} = await clubResponse.json();
+            clubIdSignal.value = clubId;
+
+            // Step 2: Invite members to the club
+            for (const {email, role} of invitees) {
+                const response = await fetch('/api/clubs/invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({clubId, email, role}),
+                });
+
+                if (!response.ok) {
+                    setFailures([...failures, `${email} could not invite`])
+                }
+            }
+
+            // Step 3: Show outcome
+            if (failures.length > 0) {
+                setSnackbarOpen(true);
+            } else {
+                alert('Club created and all members invited successfully!');
+            }
+
+        } catch (err) {
+            console.error('Unexpected error during club creation:', err);
+            setSnackbarOpen(true);
+        }
     };
 
     return (
@@ -104,11 +149,9 @@ export default function CreateClubPage() {
                             />
                             <Select
                                 value={invitee.role}
-                                onChange={(e) =>
-                                    handleInviteChange(index, 'role', e.target.value as 'Member' | 'Admin')
-                                }
+                                onChange={(e) => handleInviteChange(index, 'role', e.target.value as 'Member' | 'Admin')}
                                 variant="filled"
-                                sx={{minWidth: 100, bgcolor: 'white', borderRadius: 1}}
+                                sx={{width: 140, bgcolor: 'white', borderRadius: 1}}
                             >
                                 <MenuItem value="Member">Member</MenuItem>
                                 <MenuItem value="Admin">Admin</MenuItem>
@@ -173,6 +216,19 @@ export default function CreateClubPage() {
                         Create
                     </Button>
                 </Stack>
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                >
+                    <Alert severity="error" onClose={() => {
+                        setSnackbarOpen(false)
+                        setFailures([]);
+                    }} sx={{width: '100%'}}>
+                        Failed to invite: {failures.join(', ')}
+                    </Alert>
+                </Snackbar>
             </Box>
         </LayoutContainer>
     );

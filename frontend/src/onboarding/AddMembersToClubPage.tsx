@@ -1,10 +1,12 @@
-import {Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography,} from '@mui/material';
+import {Alert, Box, Button, IconButton, MenuItem, Select, Snackbar, Stack, TextField, Typography,} from '@mui/material';
 import {useState} from 'react';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import LayoutContainer from '../common/LayoutContainer'; // update this import if needed
+import LayoutContainer from '../common/LayoutContainer';
+import {clubIdSignal} from "../store/sessionSignal.ts";
+import {useNavigate} from "react-router-dom"; // update this import if needed
 
 type Invitee = {
     email: string;
@@ -12,10 +14,13 @@ type Invitee = {
 };
 
 export default function AddMembersPage() {
+    const navigate = useNavigate();
     const [invitees, setInvitees] = useState<Invitee[]>([
         {email: '', role: 'Member'},
         {email: '', role: 'Member'},
     ]);
+    const [failedInvites, setFailedInvites] = useState<string[]>([]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const handleInviteChange = (
         index: number,
@@ -38,12 +43,34 @@ export default function AddMembersPage() {
     };
 
     const handleCancel = () => {
-        // navigate(-1) if using react-router
+        navigate(-1)
     };
 
-    const handleSubmit = () => {
-        console.log('Submitting:', invitees);
-        // Submit to API or perform other actions
+    const handleSubmit = async () => {
+        const failures: string[] = [];
+
+        for (const invitee of invitees) {
+            const {email, role} = invitee;
+
+            const response = await fetch('/api/clubs/invite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({clubId: clubIdSignal.value, email, role}),
+            });
+
+            if (!response.ok) {
+                failures.push(email);
+            }
+        }
+
+        if (failures.length > 0) {
+            setFailedInvites(failures);
+            setSnackbarOpen(true);
+        } else {
+            alert('All members invited successfully!');
+        }
     };
 
     return (
@@ -82,10 +109,10 @@ export default function AddMembersPage() {
                                 value={invitee.role}
                                 onChange={(e) => handleInviteChange(index, 'role', e.target.value as 'Member' | 'Admin')}
                                 variant="filled"
-                                sx={{minWidth: 100, bgcolor: 'white', borderRadius: 1}}
+                                sx={{width: 140, bgcolor: 'white', borderRadius: 1}}
                             >
                                 <MenuItem value="Member">Member</MenuItem>
-                                <MenuItem value="Admin">Admin</MenuItem>
+                                <MenuItem value="Admin">Admin&nbsp;&nbsp;&nbsp;</MenuItem>
                             </Select>
                             {invitees.length > 1 && (
                                 <IconButton onClick={() => handleRemoveInvitee(index)}>
@@ -147,6 +174,16 @@ export default function AddMembersPage() {
                         Add
                     </Button>
                 </Stack>
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                >
+                    <Alert severity="error" onClose={() => setSnackbarOpen(false)} sx={{width: '100%'}}>
+                        Failed to invite: {failedInvites.join(', ')}
+                    </Alert>
+                </Snackbar>
             </Box>
         </LayoutContainer>
     );
