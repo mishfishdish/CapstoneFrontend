@@ -5,7 +5,7 @@ on:
 
 env:
   ECR_REPOSITORY: frontend-app
-  IMAGE_TAG: latest
+  IMAGE_TAG: ${{ github.sha }}
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
 jobs:
@@ -41,6 +41,12 @@ jobs:
           username: ${{ secrets.FRONTEND_EC2_USER }}
           key: ${{ secrets.FRONTEND_EC2_KEY }}
           script: |
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            docker stop frontend || true && docker rm frontend || true
-            docker run -d -p 80:80 --name frontend $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "ECR_REGISTRY: $ECR_REGISTRY"
+            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+            echo "IMAGE_TAG: $IMAGE_TAG"
+            IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            echo "Running container from image: $IMAGE"
+            docker pull $IMAGE
+            docker stop frontend || true
+            docker rm frontend || true
+            docker run -d -p 80:80 --name frontend $IMAGE
