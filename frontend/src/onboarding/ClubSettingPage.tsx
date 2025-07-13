@@ -3,8 +3,12 @@ import {Button, Container, FormControl, InputLabel, MenuItem, Paper, Select, Typ
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CreateIcon from '@mui/icons-material/Create';
 import LayoutContainer from "../common/LayoutContainer.tsx";
+import {useNavigate} from "react-router-dom";
+import {PAGE_ADD_MEMBER, PAGE_CREATE_CLUB} from "../PathConstants.tsx";
 
 export default function SettingsPage() {
+    const navigate = useNavigate();
+
     return (
         <LayoutContainer>
             <Container
@@ -42,6 +46,8 @@ export default function SettingsPage() {
                             bgcolor: 'grey.900',
                             '&:hover': {bgcolor: 'grey.800'},
                         }}
+                        onClick={() => navigate(PAGE_ADD_MEMBER)} //
+
                     >
                         Add Members To Club
                     </Button>
@@ -59,6 +65,7 @@ export default function SettingsPage() {
                         fullWidth
                         variant="contained"
                         startIcon={<CreateIcon/>}
+                        onClick={() => navigate(PAGE_CREATE_CLUB)} //
                         sx={{
                             textTransform: 'none',
                             bgcolor: 'grey.900',

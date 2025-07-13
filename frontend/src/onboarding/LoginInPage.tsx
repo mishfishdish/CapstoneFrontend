@@ -1,6 +1,6 @@
 // @ts-ignore
-import React from 'react';
-import {Box, Button, Container, Stack, TextField, Typography} from '@mui/material';
+import React, {useState} from 'react';
+import {Alert, Box, Button, Container, Snackbar, Stack, TextField, Typography} from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 import {useNavigate} from 'react-router-dom';
 import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
@@ -8,6 +8,32 @@ import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
 export default function LoginPage() {
     useTheme();
     const navigate = useNavigate();
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(false);
+
+    const handleLogin = async () => {
+        try {
+            const response = await fetch('api/auth/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({username, password}),
+            });
+
+            if (response.ok) {
+                navigate(PAGE_CLUB_SETTINGS);
+            } else {
+                setError(true);
+            }
+        } catch (err) {
+            console.error(err);
+            setError(true);
+        }
+    };
 
     return (
         <Box
@@ -66,6 +92,8 @@ export default function LoginPage() {
                     variant="outlined"
                     fullWidth
                     margin="normal"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                 />
                 <TextField
                     label="Password"
@@ -73,7 +101,10 @@ export default function LoginPage() {
                     variant="outlined"
                     fullWidth
                     margin="normal"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                 />
+
                 <Stack direction="row" spacing={2} sx={{mt: 2, width: '100%'}}>
                     <Button
                         variant="contained"
@@ -92,7 +123,7 @@ export default function LoginPage() {
                     <Button
                         variant="contained"
                         fullWidth
-                        onClick={() => navigate(PAGE_CLUB_SETTINGS)}
+                        onClick={handleLogin}
                         sx={{
                             textTransform: 'none',
                             bgcolor: 'grey.900',
@@ -105,6 +136,17 @@ export default function LoginPage() {
                     </Button>
                 </Stack>
             </Container>
+
+            <Snackbar
+                open={error}
+                autoHideDuration={4000}
+                onClose={() => setError(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setError(false)} severity="error" sx={{width: '100%'}}>
+                    Invalid username or password.
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

@@ -1,8 +1,11 @@
 import express from 'express'
+import cors from 'cors';
+
 import {
     addClubHandler,
     createClubHandler,
-    createUserHandler, inviteClubHandler,
+    createUserHandler,
+    inviteClubHandler,
     signUserHandler
 } from "./handlers/onboarding/OnboardingHandlers.ts";
 import {resolveStubToken} from "./middleware/token.ts";
@@ -14,6 +17,12 @@ const PORT = 4000
 
 // Apply token middleware globally
 app.use(resolveStubToken())
+
+app.use(cors({
+    origin: 'http://localhost:5173', // your Vite dev server
+    methods: ['POST', 'GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-stub-token'],
+}));
 
 // Onboarding endpoints
 app.post('/api/auth', createUserHandler)
