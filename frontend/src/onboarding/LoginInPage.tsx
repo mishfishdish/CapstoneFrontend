@@ -11,7 +11,7 @@ export default function LoginPage() {
     useTheme();
     const navigate = useNavigate();
 
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(false);
 
@@ -23,7 +23,7 @@ export default function LoginPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({username, password}),
+                body: JSON.stringify({email, password}),
             });
 
             if (response.ok) {
@@ -96,8 +96,8 @@ export default function LoginPage() {
                     variant="outlined"
                     fullWidth
                     margin="normal"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                 />
                 <TextField
                     label="Password"

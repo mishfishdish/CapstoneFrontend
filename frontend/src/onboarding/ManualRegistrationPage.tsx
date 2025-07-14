@@ -26,7 +26,7 @@ export default function ManualRegistrationPage() {
     const handleRegister = async (e: any) => {
         e.preventDefault();
         try {
-            const response = await fetch(config.apiBaseUrl + '/auth/login', {
+            const response = await fetch(config.apiBaseUrl + '/auth', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
