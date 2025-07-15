@@ -67,7 +67,7 @@ export default function SettingsPage() {
                         >
                             {clubs.map((club: any) => (
                                 <MenuItem key={club.clubId} value={club.clubId}>
-                                    {club.name}
+                                    {club.clubName}
                                 </MenuItem>
                             ))}
                         </Select>
