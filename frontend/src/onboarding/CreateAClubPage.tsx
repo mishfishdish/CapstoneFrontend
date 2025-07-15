@@ -5,7 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import LayoutContainer from "../common/LayoutContainer.tsx";
 import {useNavigate} from "react-router-dom";
-import {clubIdSignal} from "../store/sessionSignal.ts";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
 // ✅ Define Invitee type
 type Invitee = {
@@ -68,6 +68,23 @@ export default function CreateClubPage() {
 
             const {clubId} = await clubResponse.json();
             clubIdSignal.value = clubId;
+
+            // Step 2: add user to club
+
+            const response = await fetch('/api/clubs/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({clubId, username: userIdSignal.value, role: 'ADMIN'}),
+            });
+
+            if (!response.ok) {
+                setFailures([...failures, `Could not add user to club`])
+                setSnackbarOpen(true);
+                return; // Don't proceed if club creation fails
+
+            }
 
             // Step 2: Invite members to the club
             for (const {email, role} of invitees) {
@@ -153,8 +170,8 @@ export default function CreateClubPage() {
                                 variant="filled"
                                 sx={{width: 140, bgcolor: 'white', borderRadius: 1}}
                             >
-                                <MenuItem value="Member">Member</MenuItem>
-                                <MenuItem value="Admin">Admin</MenuItem>
+                                <MenuItem value="MEMBER">MEMBER</MenuItem>
+                                <MenuItem value="ADMIN">ADMIN</MenuItem>
                             </Select>
                             {invitees.length > 1 && (
                                 <IconButton onClick={() => handleRemoveInvitee(index)}>
