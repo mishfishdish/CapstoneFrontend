@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import LayoutContainer from "../common/LayoutContainer.tsx";
 import {useNavigate} from "react-router-dom";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+import config from "../../config.ts";
 
 // ✅ Define Invitee type
 type Invitee = {
@@ -52,7 +53,7 @@ export default function CreateClubPage() {
 
         try {
             // Step 1: Create the club
-            const clubResponse = await fetch('/api/clubs', {
+            const clubResponse = await fetch(`${config.apiBaseUrl}/clubs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ export default function CreateClubPage() {
 
             // Step 2: add user to club
 
-            const response = await fetch('/api/clubs/user', {
+            const response = await fetch(`${config.apiBaseUrl}/clubs/user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ export default function CreateClubPage() {
 
             // Step 2: Invite members to the club
             for (const {email, role} of invitees) {
-                const response = await fetch('/api/clubs/invite', {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/invite`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
