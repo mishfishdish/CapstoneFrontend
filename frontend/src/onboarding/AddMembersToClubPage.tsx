@@ -6,18 +6,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import LayoutContainer from '../common/LayoutContainer';
 import {clubIdSignal} from "../store/sessionSignal.ts";
-import {useNavigate} from "react-router-dom"; // update this import if needed
+import {useNavigate} from "react-router-dom";
+import config from "../../config.ts"; // update this import if needed
 
 type Invitee = {
     email: string;
-    role: 'Member' | 'Admin';
+    role: 'MEMBER' | 'ADMIN';
 };
 
 export default function AddMembersPage() {
     const navigate = useNavigate();
     const [invitees, setInvitees] = useState<Invitee[]>([
-        {email: '', role: 'Member'},
-        {email: '', role: 'Member'},
+        {email: '', role: 'MEMBER'},
+        {email: '', role: 'MEMBER'},
     ]);
     const [failedInvites, setFailedInvites] = useState<string[]>([]);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function AddMembersPage() {
     };
 
     const handleAddInvitee = () => {
-        setInvitees([...invitees, {email: '', role: 'Member'}]);
+        setInvitees([...invitees, {email: '', role: 'MEMBER'}]);
     };
 
     const handleRemoveInvitee = (index: number) => {
@@ -52,7 +53,7 @@ export default function AddMembersPage() {
         for (const invitee of invitees) {
             const {email, role} = invitee;
 
-            const response = await fetch('/api/clubs/invite', {
+            const response = await fetch(`${config.apiBaseUrl}/clubs/invite`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
