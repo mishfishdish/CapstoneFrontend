@@ -12,12 +12,12 @@ import {
 } from '@mui/material';
 import {AddCircleOutline, BarChart, CalendarMonth, Checklist, Description, Home, Settings,} from '@mui/icons-material';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {PAGE_CLUB_SETTINGS} from "../PathConstants.tsx";
+import {PAGE_CALENDAR, PAGE_CLUB_SETTINGS, PAGE_GANTT} from "../PathConstants.tsx";
 
 const navItems = [
     {label: 'Home Dashboard', icon: <Home/>, path: '/'},
-    {label: 'Calendar', icon: <CalendarMonth/>, path: '/calendar'},
-    {label: 'Gantt Chart', icon: <Checklist/>, path: '/gantt'},
+    {label: 'Calendar', icon: <CalendarMonth/>, path: PAGE_CALENDAR},
+    {label: 'Gantt Chart', icon: <Checklist/>, path: PAGE_GANTT},
     {label: 'Database View', icon: <Description/>, path: '/database'},
     {label: 'Analytic Reports', icon: <BarChart/>, path: '/reports'},
     {label: 'Settings', icon: <Settings/>, path: PAGE_CLUB_SETTINGS},

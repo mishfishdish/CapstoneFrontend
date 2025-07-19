@@ -1,4 +1,6 @@
-export const PAGE_LOGIN = '/'
+export const PAGE_LOGIN = '/login'
+export const PAGE_HOME = '/'
+
 export const PAGE_ADD_MEMBER = '/addMember'
 export const PAGE_CLUB_SETTINGS = '/clubSettings'
 export const PAGE_CREATE_CLUB = '/createClub'
@@ -7,3 +9,5 @@ export const PAGE_REGISTRATION = '/register'
 export const PAGE_ACTIVITY = '/createActivity'
 export const PAGE_CREATE_TASK = '/createTask'
 export const PAGE_CREATE_EVENT = '/createEvent'
+export const PAGE_CALENDAR = '/calendar'
+export const PAGE_GANTT = '/gantt'

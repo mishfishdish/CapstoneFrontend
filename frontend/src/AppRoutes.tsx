@@ -3,10 +3,13 @@ import RegistrationSuccessPage from "./onboarding/RegistrationSuccessPage.tsx";
 import {
     PAGE_ACTIVITY,
     PAGE_ADD_MEMBER,
+    PAGE_CALENDAR,
     PAGE_CLUB_SETTINGS,
     PAGE_CREATE_CLUB,
     PAGE_CREATE_EVENT,
     PAGE_CREATE_TASK,
+    PAGE_GANTT,
+    PAGE_HOME,
     PAGE_LOGIN,
     PAGE_REGISTRATION,
     PAGE_REGISTRATION_SUCCESS
@@ -19,6 +22,9 @@ import ManualRegistrationPage from "./onboarding/ManualRegistrationPage.tsx";
 import CreateActivityLandingPage from "./activityManagement/createActivity.tsx";
 import CreateTaskPage from "./activityManagement/createTask.tsx";
 import CreateEventPage from "./activityManagement/createEvent.tsx";
+import CalendarViewPage from "./activityView/calendar.tsx";
+import GanttChartPage from "./activityView/ganttChart.tsx";
+import TaskHomePage from "./activityView/HomePage.tsx";
 
 
 export default function AppRoutes() {
@@ -33,6 +39,10 @@ export default function AppRoutes() {
             <Route path={PAGE_ACTIVITY} element={<CreateActivityLandingPage/>}/>
             <Route path={PAGE_CREATE_TASK} element={<CreateTaskPage/>}/>
             <Route path={PAGE_CREATE_EVENT} element={<CreateEventPage/>}/>
+            <Route path={PAGE_CALENDAR} element={<CalendarViewPage/>}/>
+            <Route path={PAGE_GANTT} element={<GanttChartPage/>}/>
+            <Route path={PAGE_HOME} element={<TaskHomePage/>}/>
+
 
         </Routes>
     );
