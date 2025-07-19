@@ -26,6 +26,7 @@ export default function CreateActivityLandingPage() {
     ];
 
     // @ts-ignore
+    // @ts-ignore
     return (
         <LayoutContainer>
             <Box
@@ -40,7 +41,8 @@ export default function CreateActivityLandingPage() {
             >
                 <Grid container spacing={4} justifyContent="center">
                     {actions.map((action, index) => (
-                        <Grid item key={index} xs={12 as const} sm={6 as const} md={4 as const}>
+                        // @ts-ignore
+                        <Grid item key={index} xs={12} sm={6} md={4}>
                             <ButtonBase
                                 onClick={action.onClick}
                                 sx={{

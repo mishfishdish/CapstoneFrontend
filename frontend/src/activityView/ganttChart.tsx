@@ -84,7 +84,7 @@ const tasks = [
 ];
 
 export default function GanttChartPage() {
-    const [view, setView] = useState(ViewMode.Month);
+    const [view] = useState(ViewMode.Month);
 
     return (
         <LayoutContainer>

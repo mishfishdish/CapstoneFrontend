@@ -1,4 +1,4 @@
-import {Box, MenuItem, Select, Typography, useTheme,} from '@mui/material';
+import {Box, MenuItem, Select, Typography,} from '@mui/material';
 import {Calendar, dateFnsLocalizer,} from 'react-big-calendar';
 import {format, getDay, parse, startOfWeek} from 'date-fns';
 import {useState} from 'react';
@@ -38,7 +38,6 @@ const events = [
 
 export default function CalendarViewPage() {
     const [selectedClub, setSelectedClub] = useState('Monash Club Association');
-    const theme = useTheme();
 
     return (
         <LayoutContainer>
