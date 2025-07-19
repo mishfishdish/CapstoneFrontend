@@ -2,7 +2,7 @@
 import {Box} from '@mui/material';
 import Sidebar from './Sidebar';
 
-export default function LayoutContainer({children}) {
+export default function LayoutContainer({children}: any) {
     return (
         <Box
             sx={{

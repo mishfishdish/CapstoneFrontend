@@ -12,9 +12,11 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
+    "@mui/x-date-pickers": "^8.9.0",
     "react": "18",
     "react-dom": "18",
     "cookie": "^1.0.2",
-    "@preact/signals-react": "^3.2.1"
+    "@preact/signals-react": "^3.2.1",
+    "date-fns": "^4.1.0"
   }
 }
