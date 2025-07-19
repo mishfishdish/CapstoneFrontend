@@ -1,18 +1,31 @@
 import {
+    Alert,
     Box,
     Button,
     Checkbox,
     FormControl,
     FormControlLabel,
     InputLabel,
+    ListItemText,
     MenuItem,
     Select,
+    Snackbar,
     TextField,
     Typography,
 } from '@mui/material';
 import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
+import config from "../../config.ts";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+
+export interface ActivityResponse {
+    activityId: string; // UUID as string
+    activityTitle: string;
+    startTime: string | null; // ISO date string or null
+    endTime: string | null;
+    dependsOnEventId: string | null; // nullable UUID
+}
 
 export default function CreateEventPage() {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -20,23 +33,93 @@ export default function CreateEventPage() {
     const [title, setTitle] = useState('');
     const [location, setLocation] = useState('');
     const [clubs, setClubs] = useState<string[]>([]);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string, clubName: string }[]>([]);
+    const [eventOptions, setEventOptions] = useState<ActivityResponse[]>([]);
     const [parentEvent, setParentEvent] = useState('');
     const [description, setDescription] = useState('');
     const [notify, setNotify] = useState(false);
     const [notifyMinutes, setNotifyMinutes] = useState('10');
+    const [showError, setShowError] = useState(false);
 
-    const handleSubmit = () => {
-        console.log({
-            startDate,
-            endDate,
-            title,
-            location,
-            clubs,
-            parentEvent,
-            description,
-            notify,
-            notifyMinutes,
-        });
+
+    useEffect(() => {
+        async function fetchClubs() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setClubOptions(data);
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch clubs');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch clubs');
+            }
+        }
+
+        fetchClubs();
+    }, []);
+
+    useEffect(() => {
+
+        async function fetchEvents() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/events`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setEventOptions(data);
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch events');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch events');
+            }
+        }
+
+        fetchEvents()
+    }, [clubIdSignal]);
+
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(config.apiBaseUrl + '/events', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    startTime: startDate,
+                    endTime: endDate,
+                    title,
+                    location,
+                    clubs,
+                    parentEvent,
+                    description,
+                    ...(notifyMinutes != null && {
+                        notification: {
+                            userId: userIdSignal.value,
+                            notifyBeforeMinutes: notifyMinutes,
+                        }
+                    }),
+                    userId: userIdSignal.value
+                }),
+            });
+
+            if (response.ok) {
+
+            } else {
+                setShowError(true);
+            }
+        } catch (error) {
+            setShowError(true);
+            alert('Activity Creation Failed.');
+        }
     };
 
     return (
@@ -106,13 +189,22 @@ export default function CreateEventPage() {
                     <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
                         <InputLabel>Clubs involved</InputLabel>
                         <Select
+                            labelId="club-select-label"
                             multiple
                             value={clubs}
                             onChange={(e) => setClubs(e.target.value as string[])}
+                            renderValue={(selected) =>
+                                selected
+                                    .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
+                                    .join(', ')
+                            }
                         >
-                            <MenuItem value="club-1">Club 1</MenuItem>
-                            <MenuItem value="club-2">Club 2</MenuItem>
-                            <MenuItem value="club-3">Club 3</MenuItem>
+                            {clubOptions.map((club) => (
+                                <MenuItem key={club.clubId} value={club.clubId}>
+                                    <Checkbox checked={clubs.includes(club.clubId)}/>
+                                    <ListItemText primary={club.clubName}/>
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
 
@@ -122,9 +214,11 @@ export default function CreateEventPage() {
                             value={parentEvent}
                             onChange={(e) => setParentEvent(e.target.value)}
                         >
-                            <MenuItem value="">None</MenuItem>
-                            <MenuItem value="event-1">Event 1</MenuItem>
-                            <MenuItem value="event-2">Event 2</MenuItem>
+                            {eventOptions.map((activity: ActivityResponse) => (
+                                <MenuItem key={activity.activityId} value={activity.activityId}>
+                                    {activity.activityTitle}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
 
@@ -181,6 +275,16 @@ export default function CreateEventPage() {
                     </Button>
                 </Box>
             </Box>
+            <Snackbar
+                open={showError}
+                autoHideDuration={5000}
+                onClose={() => setShowError(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                    Activity creation failed.
+                </Alert>
+            </Snackbar>
         </LayoutContainer>
     );
 }

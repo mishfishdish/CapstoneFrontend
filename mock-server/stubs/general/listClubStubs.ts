@@ -8,11 +8,11 @@ export const listClubStubs: Record<string, () => any> = {
         response: [
             {
                 "clubId": "1",
-                "name": "Monash Tech Society"
+                "clubName": "Monash Tech Society"
             },
             {
                 "clubId": "2",
-                "name": "Women in STEM"
+                "clubName": "Women in STEM"
             }
         ]
     }),

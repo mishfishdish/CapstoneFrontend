@@ -39,7 +39,7 @@ export default function CreateTaskPage() {
     const [dueDate, setDueDate] = useState<Date | null>(new Date());
     const [parentEvent, setParentEvent] = useState('');
     const [notify, setNotify] = useState(false);
-    const [notifyMinutes, setNotifyMinutes] = useState('10');
+    const [notifyMinutes, setNotifyMinutes] = useState(null);
     const [showError, setShowError] = useState(false);
 
 
@@ -51,10 +51,12 @@ export default function CreateTaskPage() {
                     const data = await response.json();
                     setClubOptions(data);
                 } else {
-                    console.error('Failed to fetch clubs');
+                    setShowError(true);
+                    alert('Failed to fetch clubs');
                 }
             } catch (err) {
-                console.error('Error:', err);
+                setShowError(true);
+                alert('Failed to fetch clubs');
             }
         }
 
@@ -70,10 +72,12 @@ export default function CreateTaskPage() {
                     const data = await response.json();
                     setEventOptions(data);
                 } else {
-                    console.error('Failed to fetch clubs');
+                    setShowError(true);
+                    alert('Failed to fetch events');
                 }
             } catch (err) {
-                console.error('Error:', err);
+                setShowError(true);
+                alert('Failed to fetch events');
             }
         }
 
@@ -83,7 +87,7 @@ export default function CreateTaskPage() {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         try {
-            const response = await fetch(config.apiBaseUrl + '/auth', {
+            const response = await fetch(config.apiBaseUrl + '/tasks', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -97,10 +101,12 @@ export default function CreateTaskPage() {
                     dueDate,
                     parentEvent,
                     notify,
-                    notification: {
-                        userId: userIdSignal.value,
-                        notifyBeforeMinutes: notifyMinutes
-                    },
+                    ...(notifyMinutes != null && {
+                        notification: {
+                            userId: userIdSignal.value,
+                            notifyBeforeMinutes: notifyMinutes,
+                        }
+                    }),
                     userId: userIdSignal.value
                 }),
             });
@@ -169,9 +175,13 @@ export default function CreateTaskPage() {
                             multiple
                             value={clubs}
                             onChange={(e) => setClubs(e.target.value as string[])}
-                            renderValue={(selected) => selected.join(', ')}
+                            renderValue={(selected) =>
+                                selected
+                                    .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
+                                    .join(', ')
+                            }
                         >
-                            {clubOptions.map((club: { clubId: string, clubName: string }) => (
+                            {clubOptions.map((club) => (
                                 <MenuItem key={club.clubId} value={club.clubId}>
                                     <Checkbox checked={clubs.includes(club.clubId)}/>
                                     <ListItemText primary={club.clubName}/>
@@ -233,7 +243,7 @@ export default function CreateTaskPage() {
                             <InputLabel>Notify Time</InputLabel>
                             <Select
                                 value={notifyMinutes}
-                                onChange={(e) => setNotifyMinutes(e.target.value)}
+                                onChange={(e) => setNotifyMinutes(e.target.value as any)}
                             >
                                 <MenuItem value="5">5 minutes before</MenuItem>
                                 <MenuItem value="10">10 minutes before</MenuItem>
