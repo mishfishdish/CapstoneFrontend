@@ -3,44 +3,85 @@ import {
     Box,
     Button,
     Checkbox,
+    Dialog,
+    DialogContent,
+    DialogTitle,
     FormControl,
     FormControlLabel,
+    IconButton,
     InputLabel,
     ListItemText,
     MenuItem,
     Select,
     Snackbar,
     TextField,
-    Typography,
+    Typography
 } from '@mui/material';
 import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker';
 import {useEffect, useState} from 'react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
-import config from "../../config.ts";
-import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+import config from '../../config.ts';
+import {clubIdSignal, userIdSignal} from '../store/sessionSignal.ts';
+import CloseIcon from '@mui/icons-material/Close';
+import {useSearchParams} from "react-router-dom";
+
 
 export interface ActivityResponse {
-    activityId: string; // UUID as string
+    activityId: string;
     activityTitle: string;
-    startTime: string | null; // ISO date string or null
+    startTime: string | null;
     endTime: string | null;
-    dependsOnEventId: string | null; // nullable UUID
+    dependsOnEventId: string | null;
+
 }
 
-export default function CreateEventPage() {
+export default function UpdateEventPage() {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
     const [endDate, setEndDate] = useState<Date | null>(new Date());
     const [title, setTitle] = useState('');
     const [location, setLocation] = useState('');
     const [clubs, setClubs] = useState<string[]>([]);
-    const [clubOptions, setClubOptions] = useState<{ clubId: string, clubName: string }[]>([]);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
     const [eventOptions, setEventOptions] = useState<ActivityResponse[]>([]);
     const [parentEvent, setParentEvent] = useState('');
     const [description, setDescription] = useState('');
     const [notify, setNotify] = useState(false);
     const [notifyMinutes, setNotifyMinutes] = useState('10');
     const [showError, setShowError] = useState(false);
+    const [showQR, setShowQR] = useState(false);
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+    const [searchParams] = useSearchParams();
 
+    useEffect(() => {
+        async function fetchEvent() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/events/${searchParams.get('eventId')}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setStartDate(new Date(data.startTime))
+                    setEndDate(new Date(data.endTime))
+                    setTitle(data.title)
+                    setLocation(data.location)
+                    setClubs(data.clubs)
+                    setParentEvent(data.parentEventId)
+                    setDescription(data.description)
+                    setNotify(data.notifyBeforeMinutes != null)
+                    if (data.notifyBeforeMinutes) {
+                        setNotifyMinutes(data.notifyBeforeMinutes);
+                    }
+                    setQrCodeDataUrl(data.qrCode)
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch event data');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch event data');
+            }
+        }
+
+        fetchEvent();
+    }, []);
 
     useEffect(() => {
         async function fetchClubs() {
@@ -63,7 +104,6 @@ export default function CreateEventPage() {
     }, []);
 
     useEffect(() => {
-
         async function fetchEvents() {
             try {
                 const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/events`);
@@ -80,15 +120,14 @@ export default function CreateEventPage() {
             }
         }
 
-        fetchEvents()
+        fetchEvents();
     }, [clubIdSignal]);
-
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         try {
-            const response = await fetch(config.apiBaseUrl + '/events', {
-                method: 'POST',
+            const response = await fetch(config.apiBaseUrl + '/events/' + searchParams.get('eventId'), {
+                method: 'PUT',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
@@ -105,14 +144,14 @@ export default function CreateEventPage() {
                         notification: {
                             userId: userIdSignal.value,
                             notifyBeforeMinutes: notifyMinutes,
-                        }
+                        },
                     }),
-                    userId: userIdSignal.value
+                    userId: userIdSignal.value,
                 }),
             });
 
             if (response.ok) {
-
+                // Handle success
             } else {
                 setShowError(true);
             }
@@ -120,6 +159,39 @@ export default function CreateEventPage() {
             setShowError(true);
             alert('Activity Creation Failed.');
         }
+    };
+
+    const handleDelete = async () => {
+        try {
+            const response = await fetch(config.apiBaseUrl + '/events/' + searchParams.get('eventId'), {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                // Handle success
+            } else {
+                setShowError(true);
+            }
+        } catch (error) {
+            setShowError(true);
+            alert('Activity Deletion Failed.');
+        }
+    };
+
+    const handleShowQrCode = async () => {
+        // Simulate fetching QR code from backend
+        const fakeQrBase64 =
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAYSURBVHja7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAgLUaAAEwvK6KAAAAAElFTkSuQmCC';
+
+        // Simulated response delay
+        setTimeout(() => {
+            setQrCodeDataUrl(fakeQrBase64);
+            setShowQR(true);
+        }, 500);
     };
 
     return (
@@ -147,8 +219,17 @@ export default function CreateEventPage() {
                     }}
                 >
                     <Typography variant="h5" gutterBottom fontWeight={600}>
-                        Create a new event
+                        Update event
                     </Typography>
+
+                    <TextField
+                        fullWidth
+                        label="Event Title"
+                        value={"hello"}
+                        variant="filled"
+                        InputProps={{readOnly: true}}
+                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                    />
 
                     <Typography fontSize={14} fontWeight={500}>
                         Start Date
@@ -168,14 +249,6 @@ export default function CreateEventPage() {
                         sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
                     />
 
-                    <TextField
-                        fullWidth
-                        label="Event Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
-                    />
 
                     <TextField
                         fullWidth
@@ -192,10 +265,7 @@ export default function CreateEventPage() {
                             labelId="club-select-label"
                             multiple
                             value={clubs}
-                            onChange={(e) => {
-                                setClubs(e.target.value as string[]);
-
-                            }}
+                            onChange={(e) => setClubs(e.target.value as string[])}
                             renderValue={(selected) =>
                                 selected
                                     .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
@@ -213,10 +283,7 @@ export default function CreateEventPage() {
 
                     <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
                         <InputLabel>Parent Event</InputLabel>
-                        <Select
-                            value={parentEvent}
-                            onChange={(e) => setParentEvent(e.target.value)}
-                        >
+                        <Select value={parentEvent} onChange={(e) => setParentEvent(e.target.value)}>
                             {eventOptions.map((activity: ActivityResponse) => (
                                 <MenuItem key={activity.activityId} value={activity.activityId}>
                                     {activity.activityTitle}
@@ -250,10 +317,7 @@ export default function CreateEventPage() {
                     {notify && (
                         <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
                             <InputLabel>Notify Time</InputLabel>
-                            <Select
-                                value={notifyMinutes}
-                                onChange={(e) => setNotifyMinutes(e.target.value)}
-                            >
+                            <Select value={notifyMinutes} onChange={(e) => setNotifyMinutes(e.target.value)}>
                                 <MenuItem value="5">5 minutes before</MenuItem>
                                 <MenuItem value="10">10 minutes before</MenuItem>
                                 <MenuItem value="30">30 minutes before</MenuItem>
@@ -274,7 +338,47 @@ export default function CreateEventPage() {
                             },
                         }}
                     >
-                        Create event
+                        Update event
+                    </Button>
+
+                    <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={handleShowQrCode}
+                        sx={{mt: 2, color: 'white', borderColor: 'white', '&:hover': {borderColor: 'gray'}}}
+                    >
+                        Show QR Code
+                    </Button>
+
+                    <Dialog open={showQR} onClose={() => setShowQR(false)}>
+                        <DialogTitle sx={{m: 0, p: 2}}>
+                            Event QR Code
+                            <IconButton
+                                aria-label="close"
+                                onClick={() => setShowQR(false)}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                            >
+                                <CloseIcon/>
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent dividers sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                            <img src={qrCodeDataUrl} alt="QR Code" style={{width: 200, height: 200}}/>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        fullWidth
+                        onClick={handleDelete}
+                        sx={{mt: 3}}
+                    >
+                        Delete Event
                     </Button>
                 </Box>
             </Box>

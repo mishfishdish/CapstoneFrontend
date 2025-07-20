@@ -9,8 +9,18 @@ import {
     signUserHandler
 } from "./handlers/onboarding/OnboardingHandlers.ts";
 import {resolveStubToken} from "./middleware/token.ts";
-import {listClubsHandler, listEventsHandler} from "./handlers/general/GeneralHandlers.ts";
-import {createEventsHandler, createTasksHandler} from "./handlers/activityManagement/ActivityManagementHandlers.ts";
+import {
+    listActivitiesHandler,
+    listClubsHandler,
+    listEventDetailsHandler,
+    listEventsHandler
+} from "./handlers/general/GeneralHandlers.ts";
+import {
+    createEventsHandler,
+    createTasksHandler,
+    deleteEventsHandler,
+    updateEventsHandler
+} from "./handlers/activityManagement/ActivityManagementHandlers.ts";
 
 
 const app = express()
@@ -35,9 +45,14 @@ app.post('/api/clubs/invite', inviteClubHandler)
 // General endpoints
 app.get('/api/users/:userId/clubs', listClubsHandler);
 app.get('/api/clubs/:clubId/events', listEventsHandler);
+app.get('/api/clubs/:clubId/activity', listActivitiesHandler);
+app.get('/api/events/:eventId', listEventDetailsHandler);
+
 // Activity management
 app.post('/api/tasks', createTasksHandler);
 app.post('/api/events', createEventsHandler);
+app.delete('/api/events/:eventId', deleteEventsHandler)
+app.put('/api/events/:eventId', updateEventsHandler)
 
 
 // Start the server

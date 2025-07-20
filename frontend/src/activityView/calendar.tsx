@@ -1,10 +1,14 @@
-import {Box, MenuItem, Select, Typography,} from '@mui/material';
+import {Alert, Box, FormControl, InputLabel, MenuItem, Select, Snackbar, Typography,} from '@mui/material';
 import {Calendar, dateFnsLocalizer,} from 'react-big-calendar';
 import {format, getDay, parse, startOfWeek} from 'date-fns';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {enAU} from "date-fns/locale";
+import {useNavigate} from "react-router-dom";
+import config from "../../config.ts";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+import {PAGE_UPDATE_EVENT, PAGE_UPDATE_TASK} from "../PathConstants.tsx";
 
 const locales = {
     'en-AU': enAU,
@@ -18,26 +22,88 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
-const events = [
-    {
-        title: 'Club Meeting',
-        start: new Date(2025, 6, 21, 9, 0),
-        end: new Date(2025, 6, 21, 10, 30),
-    },
-    {
-        title: 'Workshop',
-        start: new Date(2025, 6, 23, 13, 0),
-        end: new Date(2025, 6, 23, 15, 0),
-    },
-    {
-        title: 'Presentation',
-        start: new Date(2025, 6, 25, 11, 0),
-        end: new Date(2025, 6, 25, 12, 0),
-    },
-];
+
+export interface ActivityResponse {
+    activityId: string; // UUID as string
+    activityTitle: string;
+    startTime: string | null; // ISO date string or null
+    endTime: string | null;
+    dependsOnEventId: string | null; // nullable UUID
+    type: "event" | "task"
+}
 
 export default function CalendarViewPage() {
-    const [selectedClub, setSelectedClub] = useState('Monash Club Association');
+    const [selectedClub, setSelectedClub] = useState<string>("");
+    const [showError, setShowError] = useState(false);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
+    const [event, setEvent] = useState<ActivityResponse[]>([]);
+
+    const navigate = useNavigate();
+    const handleEventClick = (event: any) => {
+        // Assuming event has an ID or type field to determine where to go
+        if (event.type === 'event') {
+            navigate(`${PAGE_UPDATE_EVENT}/?eventId=${event.activityId}`);
+        } else if (event.type === 'task') {
+            navigate(`${PAGE_UPDATE_TASK}?taskId=${event.activityId}`);
+        }
+    };
+
+    useEffect(() => {
+        async function fetchClubs() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setClubOptions(data);
+                    if (data.length > 0) {
+                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                    }
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch clubs');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch clubs');
+            }
+        }
+
+        fetchClubs();
+    }, []); // Only runs on mount
+
+    useEffect(() => {
+        if (!clubIdSignal.value) return; // Don't fetch if clubId is empty or undefined
+
+        async function fetchActivities() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/activity`);
+                if (response.ok) {
+                    const rawData = await response.json();
+                    const parsed = rawData.map((activity: ActivityResponse): any => ({
+                        ...activity,
+                        startTime: activity.startTime ? new Date(activity.startTime) : undefined,
+                        endTime: activity.endTime ? new Date(activity.endTime) : undefined,
+                        title: activity.activityTitle
+                    }));
+                    setEvent(parsed);
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch activities');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch activities');
+            }
+        }
+
+        fetchActivities();
+    }, [clubIdSignal.value]);
+
+    const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+        const newClubId = event.target.value as string;
+        setSelectedClub(newClubId);
+        clubIdSignal.value = newClubId;
+    };
 
     return (
         <LayoutContainer>
@@ -63,21 +129,28 @@ export default function CalendarViewPage() {
                     <Typography variant="h5" fontWeight="bold">
                         Calendar view
                     </Typography>
-                    <Select
-                        value={selectedClub}
-                        onChange={(e) => setSelectedClub(e.target.value)}
-                        sx={{
-                            bgcolor: 'rgba(255,255,255,0.08)',
-                            color: 'white',
-                            borderRadius: 2,
-                            minWidth: {xs: '100%', sm: 250},
-                            '.MuiSvgIcon-root': {color: 'white'},
-                        }}
-                    >
-                        <MenuItem value="Monash Club Association">Monash Club Association</MenuItem>
-                        <MenuItem value="Science Society">Science Society</MenuItem>
-                        <MenuItem value="Art Club">Art Club</MenuItem>
-                    </Select>
+                    <FormControl variant="outlined">
+                        <InputLabel id="club-select-label">Select Club</InputLabel>
+                        <Select
+                            labelId="club-select-label"
+                            value={selectedClub}
+                            onChange={handleChange as any}
+                            label="Select Club"
+                            sx={{
+                                minWidth: 250, // or whatever width you want
+                                bgcolor: 'rgba(255,255,255,0.08)',
+                                color: 'white',
+                                borderRadius: 2,
+                                '.MuiSvgIcon-root': {color: 'white'},
+                            }}
+                        >
+                            {clubOptions.map((club) => (
+                                <MenuItem key={club.clubId} value={club.clubId}>
+                                    {club.clubName}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
 
                 <Box sx={{display: 'flex', justifyContent: 'center'}}>
@@ -119,21 +192,38 @@ export default function CalendarViewPage() {
                             '& .rbc-today': {
                                 backgroundColor: 'rgba(255,255,255,0.05) !important',
                             },
-
+                            '.rbc-toolbar': {
+                                justifyContent: 'flex-start !important'
+                            },
+                            '.rbc-toolbar button': {
+                                color: 'white !important',
+                                borderColor: 'white !important'
+                            }
                         }}
                     >
                         <Calendar
                             localizer={localizer}
-                            events={events}
-                            startAccessor="start"
-                            endAccessor="end"
+                            events={event}
+                            startAccessor="startTime"
+                            endAccessor="endTime"
                             views={['month']}
                             popup
                             style={{height: '100%'}}
+                            onSelectEvent={handleEventClick}
                         />
                     </Box>
                 </Box>
             </Box>
+            <Snackbar
+                open={showError}
+                autoHideDuration={5000}
+                onClose={() => setShowError(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                    Activity creation failed.
+                </Alert>
+            </Snackbar>
         </LayoutContainer>
     );
 }

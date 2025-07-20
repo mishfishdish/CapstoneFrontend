@@ -21,6 +21,7 @@
     "react-big-calendar": "^1.19.4",
     "@types/react-big-calendar": "^1.16.2",
     "gantt-task-react": "^0.3.9",
-    "react-calendar": "^6.0.0"
+    "react-calendar": "^6.0.0",
+    "qrcode.react": "^4.2.0"
   }
 }
