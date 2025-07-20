@@ -1,0 +1,61 @@
+import {Box, Button, Paper, Typography} from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import LayoutContainer from '../common/LayoutContainer';
+import {useNavigate} from 'react-router-dom';
+import {PAGE_HOME} from "../PathConstants.tsx";
+
+export default function ActivitySuccessPage() {
+    const navigate = useNavigate();
+
+    return (
+        <LayoutContainer>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '100vh',
+                    ml: '240px',
+                    px: 2,
+                    py: 6,
+                    color: 'white',
+                }}
+            >
+                <Paper
+                    elevation={4}
+                    sx={{
+                        p: 6,
+                        borderRadius: 4,
+                        textAlign: 'center',
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'white',
+                        maxWidth: 600,
+                    }}
+                >
+                    <CheckCircleOutlineIcon sx={{fontSize: 80, color: '#FFFFFF', mb: 2}}/>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Activity successfully created
+                    </Typography>
+
+                    <Button
+                        variant="contained"
+                        sx={{
+                            mt: 3,
+                            bgcolor: 'grey.900',
+                            '&:hover': {bgcolor: 'grey.800'},
+                            textTransform: 'none',
+                            color: 'white',
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 'bold',
+                        }}
+                        onClick={() => navigate(PAGE_HOME)}
+                    >
+                        Go to dashboard
+                    </Button>
+                </Paper>
+            </Box>
+        </LayoutContainer>
+    );
+}

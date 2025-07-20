@@ -18,6 +18,8 @@ import {useEffect, useState} from 'react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+import {useNavigate} from "react-router-dom";
+import {PAGE_CREATE_SUCCESS} from "../PathConstants.tsx";
 
 export interface ActivityResponse {
     activityId: string; // UUID as string
@@ -40,6 +42,7 @@ export default function CreateEventPage() {
     const [notify, setNotify] = useState(false);
     const [notifyMinutes, setNotifyMinutes] = useState('10');
     const [showError, setShowError] = useState(false);
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -112,6 +115,8 @@ export default function CreateEventPage() {
             });
 
             if (response.ok) {
+                navigate(PAGE_CREATE_SUCCESS)
+
 
             } else {
                 setShowError(true);

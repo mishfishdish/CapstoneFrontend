@@ -13,13 +13,16 @@ import {
     listActivitiesHandler,
     listClubsHandler,
     listEventDetailsHandler,
-    listEventsHandler
+    listEventsHandler,
+    listTaskDetailsHandler
 } from "./handlers/general/GeneralHandlers.ts";
 import {
     createEventsHandler,
     createTasksHandler,
     deleteEventsHandler,
-    updateEventsHandler
+    deleteTaskHandler,
+    updateEventsHandler,
+    updateTaskHandler
 } from "./handlers/activityManagement/ActivityManagementHandlers.ts";
 
 
@@ -47,13 +50,16 @@ app.get('/api/users/:userId/clubs', listClubsHandler);
 app.get('/api/clubs/:clubId/events', listEventsHandler);
 app.get('/api/clubs/:clubId/activity', listActivitiesHandler);
 app.get('/api/events/:eventId', listEventDetailsHandler);
+app.get('/api/tasks/:taskId', listTaskDetailsHandler);
+
 
 // Activity management
 app.post('/api/tasks', createTasksHandler);
 app.post('/api/events', createEventsHandler);
 app.delete('/api/events/:eventId', deleteEventsHandler)
 app.put('/api/events/:eventId', updateEventsHandler)
-
+app.delete('/api/tasks/:taskId', deleteTaskHandler)
+app.put('/api/tasks/:tasksId', updateTaskHandler)
 
 // Start the server
 app.listen(PORT, () => {

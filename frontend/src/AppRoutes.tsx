@@ -7,26 +7,33 @@ import {
     PAGE_CLUB_SETTINGS,
     PAGE_CREATE_CLUB,
     PAGE_CREATE_EVENT,
+    PAGE_CREATE_SUCCESS,
     PAGE_CREATE_TASK,
+    PAGE_DELETE_SUCCESS,
     PAGE_GANTT,
     PAGE_HOME,
     PAGE_LOGIN,
     PAGE_REGISTRATION,
     PAGE_REGISTRATION_SUCCESS,
-    PAGE_UPDATE_EVENT
+    PAGE_UPDATE_EVENT,
+    PAGE_UPDATE_SUCCESS
 } from "./PathConstants.tsx";
 import LoginPage from "./onboarding/LoginInPage.tsx";
 import AddMembersPage from "./onboarding/AddMembersToClubPage.tsx";
 import SettingsPage from "./onboarding/ClubSettingPage.tsx";
 import CreateClubPage from "./onboarding/CreateAClubPage.tsx";
 import ManualRegistrationPage from "./onboarding/ManualRegistrationPage.tsx";
-import CreateActivityLandingPage from "./activityManagement/createActivity.tsx";
-import CreateTaskPage from "./activityManagement/createTask.tsx";
-import CreateEventPage from "./activityManagement/createEvent.tsx";
+import CreateTaskPage from "./activityManagement/CreateTask.tsx";
+import CreateEventPage from "./activityManagement/CreateEvent.tsx";
 import CalendarViewPage from "./activityView/calendar.tsx";
 import GanttChartPage from "./activityView/ganttChart.tsx";
 import TaskHomePage from "./activityView/HomePage.tsx";
-import UpdateEventPage from './activityManagement/updateEvent.tsx';
+import UpdateEventPage from './activityManagement/UpdateEvent.tsx';
+import ActivityDeletePage from "./activityManagement/DeleteSuccess.tsx";
+import ActivitySuccessPage from "./activityManagement/CreateSuccess.tsx";
+import ActivityUpdatePage from "./activityManagement/UpdateSuccess.tsx";
+// @ts-ignore
+import CreateActivityLandingPage from './activityManagement/createActivity.tsx';
 
 
 export default function AppRoutes() {
@@ -45,6 +52,9 @@ export default function AppRoutes() {
             <Route path={PAGE_GANTT} element={<GanttChartPage/>}/>
             <Route path={PAGE_HOME} element={<TaskHomePage/>}/>
             <Route path={PAGE_UPDATE_EVENT} element={<UpdateEventPage/>}/>
+            <Route path={PAGE_CREATE_SUCCESS} element={<ActivitySuccessPage/>}/>
+            <Route path={PAGE_UPDATE_SUCCESS} element={<ActivityUpdatePage/>}/>
+            <Route path={PAGE_DELETE_SUCCESS} element={<ActivityDeletePage/>}/>
 
 
         </Routes>
