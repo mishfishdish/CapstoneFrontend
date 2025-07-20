@@ -227,7 +227,7 @@ export default function UpdateEventPage() {
                     <TextField
                         fullWidth
                         label="Event Title"
-                        value={"hello"}
+                        value={title}
                         variant="filled"
                         InputProps={{readOnly: true}}
                         sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
@@ -391,7 +391,7 @@ export default function UpdateEventPage() {
                 anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
             >
                 <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
-                    Activity creation failed.
+                    Activity update failed.
                 </Alert>
             </Snackbar>
         </LayoutContainer>

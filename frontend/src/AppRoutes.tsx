@@ -16,7 +16,8 @@ import {
     PAGE_REGISTRATION,
     PAGE_REGISTRATION_SUCCESS,
     PAGE_UPDATE_EVENT,
-    PAGE_UPDATE_SUCCESS
+    PAGE_UPDATE_SUCCESS,
+    PAGE_UPDATE_TASK
 } from "./PathConstants.tsx";
 import LoginPage from "./onboarding/LoginInPage.tsx";
 import AddMembersPage from "./onboarding/AddMembersToClubPage.tsx";
@@ -34,6 +35,7 @@ import ActivitySuccessPage from "./activityManagement/CreateSuccess.tsx";
 import ActivityUpdatePage from "./activityManagement/UpdateSuccess.tsx";
 // @ts-ignore
 import CreateActivityLandingPage from './activityManagement/createActivity.tsx';
+import UpdateTaskPage from "./activityManagement/UpdateTask.tsx";
 
 
 export default function AppRoutes() {
@@ -52,6 +54,8 @@ export default function AppRoutes() {
             <Route path={PAGE_GANTT} element={<GanttChartPage/>}/>
             <Route path={PAGE_HOME} element={<TaskHomePage/>}/>
             <Route path={PAGE_UPDATE_EVENT} element={<UpdateEventPage/>}/>
+            <Route path={PAGE_UPDATE_TASK} element={<UpdateTaskPage/>}/>
+
             <Route path={PAGE_CREATE_SUCCESS} element={<ActivitySuccessPage/>}/>
             <Route path={PAGE_UPDATE_SUCCESS} element={<ActivityUpdatePage/>}/>
             <Route path={PAGE_DELETE_SUCCESS} element={<ActivityDeletePage/>}/>

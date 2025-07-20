@@ -18,8 +18,8 @@ import {useEffect, useState} from 'react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
-import {useNavigate} from "react-router-dom";
-import {PAGE_CREATE_SUCCESS} from "../PathConstants.tsx";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {PAGE_CREATE_SUCCESS, PAGE_DELETE_SUCCESS} from "../PathConstants.tsx";
 
 export interface ActivityResponse {
     activityId: string; // UUID as string
@@ -29,7 +29,7 @@ export interface ActivityResponse {
     dependsOnEventId: string | null; // nullable UUID
 }
 
-export default function CreateTaskPage() {
+export default function UpdateTaskPage() {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -44,6 +44,36 @@ export default function CreateTaskPage() {
     const [notifyMinutes, setNotifyMinutes] = useState(null);
     const [showError, setShowError] = useState(false);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        async function fetchTask() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/tasks/${searchParams.get('taskId')}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setDueDate(new Date(data.dueDate))
+                    setTitle(data.title)
+                    setClubs(data.clubs)
+                    setPriority(data.priority)
+                    setParentEvent(data.parentEventId)
+                    setDescription(data.description)
+                    setNotify(data.notifyBeforeMinutes != null)
+                    if (data.notifyBeforeMinutes) {
+                        setNotifyMinutes(data.notifyBeforeMinutes);
+                    }
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch task data');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch task data');
+            }
+        }
+
+        fetchTask();
+    }, []);
 
 
     useEffect(() => {
@@ -89,9 +119,10 @@ export default function CreateTaskPage() {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+
         try {
-            const response = await fetch(config.apiBaseUrl + '/tasks', {
-                method: 'POST',
+            const response = await fetch(config.apiBaseUrl + '/tasks/' + searchParams.get('taskId'), {
+                method: 'PUT',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,6 +156,27 @@ export default function CreateTaskPage() {
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            const response = await fetch(config.apiBaseUrl + '/tasks/' + searchParams.get('taskId'), {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                navigate(PAGE_DELETE_SUCCESS)
+            } else {
+                setShowError(true);
+            }
+        } catch (error) {
+            setShowError(true);
+            alert('Activity Deletion Failed.');
+        }
+    };
+
     return (
         <LayoutContainer>
             <Box
@@ -150,7 +202,7 @@ export default function CreateTaskPage() {
                     }}
                 >
                     <Typography variant="h5" gutterBottom fontWeight={600}>
-                        Create a new task
+                        Update task
                     </Typography>
 
                     <TextField
@@ -159,6 +211,7 @@ export default function CreateTaskPage() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         variant="filled"
+                        InputProps={{readOnly: true}}
                         sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
                     />
 
@@ -268,7 +321,16 @@ export default function CreateTaskPage() {
                             },
                         }}
                     >
-                        Create task
+                        Update task
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        fullWidth
+                        onClick={handleDelete}
+                        sx={{mt: 3}}
+                    >
+                        Delete Task
                     </Button>
                 </Box>
             </Box>
@@ -279,7 +341,7 @@ export default function CreateTaskPage() {
                 anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
             >
                 <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
-                    Activity creation failed.
+                    Activity update failed.
                 </Alert>
             </Snackbar>
         </LayoutContainer>
