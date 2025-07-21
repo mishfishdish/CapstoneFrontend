@@ -1,10 +1,11 @@
 // @ts-ignore
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Alert, Box, Button, Paper, Snackbar, TextField, Typography} from '@mui/material';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import {PAGE_REGISTRATION_SUCCESS} from "../PathConstants.tsx";
 import config from "../../config.ts";
 import {userIdSignal} from ".././store/sessionSignal.ts";
+import {jwtDecode} from 'jwt-decode';
 
 
 export default function ManualRegistrationPage() {
@@ -15,8 +16,41 @@ export default function ManualRegistrationPage() {
         lastname: '',
         username: '',
         password: '',
+        role: '',
+        clubName: '',
     });
     const [showError, setShowError] = useState(false);
+    const [clubId, setClubId] = useState('');
+    const [tokenPresent, setTokenPresent] = useState(false);
+
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token');
+    useEffect(() => {
+        if (token) {
+            try {
+                const decoded: {
+                    clubId: string;
+                    clubName: string;
+                    role: string;
+                    email: string;
+                } = jwtDecode(token);
+
+                setTokenPresent(true);
+                setClubId(decoded.clubId);
+                setFormData((prev) => ({
+                    ...prev,
+                    email: decoded.email,
+                    role: decoded.role,
+                    clubName: decoded.clubName,
+                }));
+
+
+            } catch (err) {
+                setShowError(true);
+                alert('Could not decode token');
+            }
+        }
+    }, [token]);
 
 
     const handleChange = (e: any) => {
@@ -35,10 +69,35 @@ export default function ManualRegistrationPage() {
                 body: JSON.stringify(formData),
             });
 
+
             if (response.ok) {
                 const data = await response.json(); // ⬅️ Parse JSON response
                 userIdSignal.value = data.userId
-                navigate(PAGE_REGISTRATION_SUCCESS);
+
+                if (tokenPresent) {
+                    const clubResponse = await fetch(config.apiBaseUrl + '/clubs/user', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            clubId,
+                            email: formData.email,
+                            role: formData.email
+                        }),
+                    });
+
+                    if (clubResponse.ok) {
+                        navigate(PAGE_REGISTRATION_SUCCESS);
+
+                    } else {
+                        setShowError(true);
+                        alert('Registration failed.');
+                    }
+                }
+
+
             } else {
                 setShowError(true);
             }
@@ -82,8 +141,35 @@ export default function ManualRegistrationPage() {
                 </Typography>
 
                 <form>
+                    {tokenPresent && (
+                        <>
+                            <TextField
+                                fullWidth
+                                label="Role"
+                                variant="outlined"
+                                margin="normal"
+                                name="role"
+                                value={formData.role}
+                                InputProps={{readOnly: true}}
+                                onChange={handleChange}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Club Name"
+                                variant="outlined"
+                                margin="normal"
+                                name="clubName"
+                                value={formData.clubName}
+                                InputProps={{readOnly: true}}
+                                onChange={handleChange}
+                            />
+                        </>
+                    )}
                     <TextField fullWidth label="Email" variant="outlined" margin="normal" name="email"
                                value={formData.email}
+                               InputProps={{
+                                   readOnly: tokenPresent
+                               }}
                                onChange={handleChange}/>
                     <TextField fullWidth label="Firstname" variant="outlined" margin="normal" name="firstname"
                                value={formData.firstname}
