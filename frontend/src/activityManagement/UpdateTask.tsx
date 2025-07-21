@@ -37,6 +37,7 @@ export default function UpdateTaskPage() {
     const [clubs, setClubs] = useState<string[]>([]);
     const [clubOptions, setClubOptions] = useState<{ clubId: string, clubName: string }[]>([]);
     const [eventOptions, setEventOptions] = useState<ActivityResponse[]>([]);
+    const [completed, setCompleted] = useState<boolean>(false);
 
     const [dueDate, setDueDate] = useState<Date | null>(new Date());
     const [parentEvent, setParentEvent] = useState('');
@@ -58,6 +59,7 @@ export default function UpdateTaskPage() {
                     setPriority(data.priority)
                     setParentEvent(data.parentEventId)
                     setDescription(data.description)
+                    setCompleted(data.completed)
                     setNotify(data.notifyBeforeMinutes != null)
                     if (data.notifyBeforeMinutes) {
                         setNotifyMinutes(data.notifyBeforeMinutes);
@@ -135,6 +137,7 @@ export default function UpdateTaskPage() {
                     dueDate,
                     parentEvent,
                     notify,
+                    completed,
                     ...(notifyMinutes != null && {
                         notification: {
                             userId: userIdSignal.value,
@@ -307,6 +310,17 @@ export default function UpdateTaskPage() {
                             </Select>
                         </FormControl>
                     )}
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={completed || false}
+                                onChange={(e) => setCompleted(e.target.checked)}
+                                sx={{color: 'white'}}
+                            />
+                        }
+                        label="Task Completed"
+                    />
 
                     <Button
                         variant="contained"

@@ -13,7 +13,8 @@ export const listTaskDetailsStubs: Record<string, () => any> = {
                 "clubs": ["2"],
                 "priority": "Medium",
                 "parentEventId": "1",
-                "notifyBeforeMinutes": 45
+                "notifyBeforeMinutes": 45,
+                completed: false
             }
     }),
 }
