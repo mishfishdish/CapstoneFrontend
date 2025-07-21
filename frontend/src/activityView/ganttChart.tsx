@@ -1,90 +1,104 @@
-import {Box, MenuItem, Select, Typography} from '@mui/material';
-import {useState} from 'react';
+import {Alert, Box, FormControl, InputLabel, MenuItem, Select, Snackbar, Typography} from '@mui/material';
+import {useEffect, useState} from 'react';
 import {Gantt, ViewMode} from 'gantt-task-react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
 import 'gantt-task-react/dist/index.css';
+import {PAGE_UPDATE_EVENT, PAGE_UPDATE_TASK} from "../PathConstants.tsx";
+import {useNavigate} from "react-router-dom";
+import config from "../../config.ts";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
-const tasks = [
-    {
-        start: new Date('2024-03-01'),
-        end: new Date('2024-03-02'),
-        name: 'Schedule event',
-        id: 'Task 1',
-        type: 'task',
-        progress: 100,
-        styles: {backgroundColor: '#f99', progressColor: '#f99'},
-    },
-    {
-        start: new Date('2024-03-02'),
-        end: new Date('2024-03-04'),
-        name: 'Raise sponsors',
-        id: 'Task 2',
-        type: 'task',
-        progress: 100,
-        dependencies: ['Task 1'],
-        styles: {backgroundColor: '#f99', progressColor: '#f99'},
-    },
-    {
-        start: new Date('2024-03-03'),
-        end: new Date('2024-03-05'),
-        name: 'Do catering',
-        id: 'Task 3',
-        type: 'task',
-        progress: 60,
-        dependencies: ['Task 2'],
-        styles: {backgroundColor: '#f99', progressColor: '#f99'},
-    },
-    {
-        start: new Date('2024-03-01'),
-        end: new Date('2024-03-02'),
-        name: 'Group meeting 1',
-        id: 'Task 4',
-        type: 'task',
-        progress: 100,
-        styles: {backgroundColor: '#ffc57a', progressColor: '#ffc57a'},
-    },
-    {
-        start: new Date('2024-03-04'),
-        end: new Date('2024-03-05'),
-        name: 'Find venue',
-        id: 'Task 5',
-        type: 'task',
-        progress: 100,
-        dependencies: ['Task 4'],
-        styles: {backgroundColor: '#ffc57a', progressColor: '#ffc57a'},
-    },
-    {
-        start: new Date('2024-03-04'),
-        end: new Date('2024-03-06'),
-        name: 'Group meeting 2',
-        id: 'Task 6',
-        type: 'task',
-        progress: 100,
-        dependencies: ['Task 5'],
-        styles: {backgroundColor: '#ffc57a', progressColor: '#ffc57a'},
-    },
-    {
-        start: new Date('2024-03-06'),
-        end: new Date('2024-03-08'),
-        name: 'Rehearsal',
-        id: 'Task 7',
-        type: 'task',
-        progress: 70,
-    },
-    {
-        start: new Date('2024-03-08'),
-        end: new Date('2024-03-10'),
-        name: 'Coding Association Orientation',
-        id: 'Task 8',
-        type: 'task',
-        progress: 30,
-        dependencies: ['Task 7'],
-        styles: {backgroundColor: '#ffc57a', progressColor: '#ffc57a'},
-    },
-];
+
+export interface ActivityResponse {
+    activityId: string; // UUID as string
+    activityTitle: string;
+    startTime: string | null; // ISO date string or null
+    endTime: string | null;
+    dependsOnEventId: string | null; // nullable UUID
+    type: "event" | "task"
+}
 
 export default function GanttChartPage() {
     const [view] = useState(ViewMode.Month);
+    const navigate = useNavigate();
+    const [showError, setShowError] = useState(false);
+    const [event, setEvent] = useState<ActivityResponse[]>([]);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
+    const [selectedClub, setSelectedClub] = useState<string>("");
+
+
+    const handleEventClick = (event: any) => {
+        // Assuming event has an ID or type field to determine where to go
+        if (event.type === 'event') {
+            navigate(`${PAGE_UPDATE_EVENT}/?eventId=${event.id}`);
+        } else if (event.type === 'task') {
+            navigate(`${PAGE_UPDATE_TASK}?taskId=${event.id}`);
+        }
+    };
+
+    useEffect(() => {
+        async function fetchClubs() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setClubOptions(data);
+                    if (data.length > 0) {
+                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                    }
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch clubs');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch clubs');
+            }
+        }
+
+        fetchClubs();
+    }, []); // Only runs on mount
+
+    useEffect(() => {
+        if (!clubIdSignal.value) return; // Don't fetch if clubId is empty or undefined
+
+        async function fetchActivities() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/activity`);
+                if (response.ok) {
+                    const rawData = await response.json();
+                    const parsed = rawData
+                        .filter((activity: ActivityResponse) => activity.startTime && activity.endTime) // eliminate nulls early
+                        .map((activity: ActivityResponse): any => ({
+                            id: activity.activityId,
+                            name: activity.activityTitle,
+                            start: new Date(activity.startTime as string),
+                            end: new Date(activity.endTime as string),
+                            type: activity.type,
+                            dependencies: activity.dependsOnEventId ? [activity.dependsOnEventId] : [],
+                            progress: 0, // required by gantt-task-react
+                        }));// Remove nulls
+                    console.log(parsed)
+                    setEvent(parsed);
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch activities');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch activities');
+            }
+        }
+
+        fetchActivities();
+    }, [clubIdSignal.value]);
+
+    const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+        const newClubId = event.target.value as string;
+        setSelectedClub(newClubId);
+        clubIdSignal.value = newClubId;
+    };
+
 
     return (
         <LayoutContainer>
@@ -112,57 +126,86 @@ export default function GanttChartPage() {
                     <Typography variant="h5" fontWeight="bold">
                         Gantt Chart
                     </Typography>
-                    <Select
-                        value="Month"
-                        sx={{
-                            bgcolor: 'rgba(255,255,255,0.08)',
-                            color: 'white',
-                            borderRadius: 2,
-                            minWidth: {xs: '100%', sm: 400},
-                            '.MuiSvgIcon-root': {color: 'white'},
-                        }}
-                    >
-                        <MenuItem value={ViewMode.Day}>Day</MenuItem>
-                        <MenuItem value={ViewMode.Week}>Week</MenuItem>
-                        <MenuItem value={ViewMode.Month}>Month</MenuItem>
-                    </Select>
+                    <FormControl variant="outlined">
+                        <InputLabel id="club-select-label">Select Club</InputLabel>
+                        <Select
+                            labelId="club-select-label"
+                            value={selectedClub}
+                            onChange={handleChange as any}
+                            label="Select Club"
+                            sx={{
+                                minWidth: 250, // or whatever width you want
+                                bgcolor: 'rgba(255,255,255,0.08)',
+                                color: 'white',
+                                borderRadius: 2,
+                                '.MuiSvgIcon-root': {color: 'white'},
+                            }}
+                        >
+                            {clubOptions.map((club) => (
+                                <MenuItem key={club.clubId} value={club.clubId}>
+                                    {club.clubName}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
 
                 <Box sx={{display: 'flex', justifyContent: 'center'}}>
-                    <Box
-                        sx={{
-                            bgcolor: 'rgba(255,255,255,0.06)',
-                            borderRadius: 4,
-                            p: 2,
-                            backdropFilter: 'blur(12px)',
-                            width: '100%',
-                            maxWidth: 2000,
-                            overflowX: 'auto',
-                            '& canvas': {
-                                background: 'white',
-                            },
-                            '& .bar-label': {
-                                display: 'none',
-                            },
-                            '& .tooltip-text': {
-                                display: 'none',
-                            },
-                            '& .gantt-container .task-list': {
-                                display: 'none !important',
-                            },
-                            '& .gantt-container .task-list-header': {
-                                display: 'none !important',
-                            },
-                            '& .calendar text': {
-                                fontSize: '0.75rem', // Smaller font size
-                            },
-                        }}
-                    >
-                        <Gantt tasks={tasks as any} viewMode={view} listCellWidth=""
-                        />
-                    </Box>
+                    {event.length > 0 ? (
+                        <Box
+                            sx={{
+                                bgcolor: 'rgba(255,255,255,0.06)',
+                                borderRadius: 4,
+                                p: 2,
+                                backdropFilter: 'blur(12px)',
+                                width: '100%',
+                                maxWidth: 2000,
+                                overflowX: 'auto',
+                                '& canvas': {
+                                    background: 'white',
+                                },
+                                '& .bar-label': {
+                                    display: 'none',
+                                },
+                                '& .tooltip-text': {
+                                    display: 'none',
+                                },
+                                '& .gantt-container .task-list': {
+                                    display: 'none !important',
+                                },
+                                '& .gantt-container .task-list-header': {
+                                    display: 'none !important',
+                                },
+                                '& .calendar text': {
+                                    fontSize: '0.75rem',
+                                },
+                            }}
+                        >
+                            <Gantt
+                                onClick={handleEventClick}
+                                tasks={event as any}
+                                columnWidth={100}
+                                viewMode={view}
+                                listCellWidth=""
+                            />
+                        </Box>
+                    ) : (
+                        <Typography sx={{color: 'white', textAlign: 'center', mt: 4}}>
+                            No valid activities to display.
+                        </Typography>
+                    )}
                 </Box>
             </Box>
+            <Snackbar
+                open={showError}
+                autoHideDuration={5000}
+                onClose={() => setShowError(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                    Activity creation failed.
+                </Alert>
+            </Snackbar>
         </LayoutContainer>
     );
 }
