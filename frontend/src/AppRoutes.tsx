@@ -11,6 +11,7 @@ import {
     PAGE_CREATE_EVENT,
     PAGE_CREATE_SUCCESS,
     PAGE_CREATE_TASK,
+    PAGE_DATABASE,
     PAGE_DELETE_SUCCESS,
     PAGE_GANTT,
     PAGE_HOME,
@@ -40,6 +41,7 @@ import CreateActivityLandingPage from './activityManagement/createActivity.tsx';
 import UpdateTaskPage from "./activityManagement/UpdateTask.tsx";
 import EventSuccessPage from "./attendance/EventSuccessPage.tsx";
 import EventRegistrationForm from "./attendance/EventRegistrationForm.tsx";
+import DatabaseView from './activityView/DatabaseView.tsx';
 
 
 export default function AppRoutes() {
@@ -64,6 +66,9 @@ export default function AppRoutes() {
             <Route path={PAGE_DELETE_SUCCESS} element={<ActivityDeletePage/>}/>
             <Route path={ATTENDANCE_PAGE} element={<EventRegistrationForm/>}/>
             <Route path={ATTENDANCE_SUCCESS} element={<EventSuccessPage/>}/>
+            <Route path={PAGE_DATABASE} element={<DatabaseView/>}/>
+
+
         </Routes>
     );
 }
