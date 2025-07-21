@@ -24,6 +24,7 @@ import {
     updateEventsHandler,
     updateTaskHandler
 } from "./handlers/activityManagement/ActivityManagementHandlers.ts";
+import {eventRegistrationHandler} from "./handlers/attendance/AttendanceHandlers.ts";
 
 
 const app = express()
@@ -60,6 +61,9 @@ app.delete('/api/events/:eventId', deleteEventsHandler)
 app.put('/api/events/:eventId', updateEventsHandler)
 app.delete('/api/tasks/:taskId', deleteTaskHandler)
 app.put('/api/tasks/:tasksId', updateTaskHandler)
+
+//attendance
+app.post('/api/attendance/:eventId', eventRegistrationHandler);
 
 // Start the server
 app.listen(PORT, () => {

@@ -185,13 +185,8 @@ export default function UpdateEventPage() {
     };
 
     const handleShowQrCode = async () => {
-        // Simulate fetching QR code from backend
-        const fakeQrBase64 =
-            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAYSURBVHja7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAgLUaAAEwvK6KAAAAAElFTkSuQmCC';
-
         // Simulated response delay
         setTimeout(() => {
-            setQrCodeDataUrl(fakeQrBase64);
             setShowQR(true);
         }, 500);
     };

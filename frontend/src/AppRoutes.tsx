@@ -1,6 +1,8 @@
 import {Route, Routes} from 'react-router-dom';
 import RegistrationSuccessPage from "./onboarding/RegistrationSuccessPage.tsx";
 import {
+    ATTENDANCE_PAGE,
+    ATTENDANCE_SUCCESS,
     PAGE_ACTIVITY,
     PAGE_ADD_MEMBER,
     PAGE_CALENDAR,
@@ -36,6 +38,8 @@ import ActivityUpdatePage from "./activityManagement/UpdateSuccess.tsx";
 // @ts-ignore
 import CreateActivityLandingPage from './activityManagement/createActivity.tsx';
 import UpdateTaskPage from "./activityManagement/UpdateTask.tsx";
+import EventSuccessPage from "./attendance/EventSuccessPage.tsx";
+import EventRegistrationForm from "./attendance/EventRegistrationForm.tsx";
 
 
 export default function AppRoutes() {
@@ -55,12 +59,11 @@ export default function AppRoutes() {
             <Route path={PAGE_HOME} element={<TaskHomePage/>}/>
             <Route path={PAGE_UPDATE_EVENT} element={<UpdateEventPage/>}/>
             <Route path={PAGE_UPDATE_TASK} element={<UpdateTaskPage/>}/>
-
             <Route path={PAGE_CREATE_SUCCESS} element={<ActivitySuccessPage/>}/>
             <Route path={PAGE_UPDATE_SUCCESS} element={<ActivityUpdatePage/>}/>
             <Route path={PAGE_DELETE_SUCCESS} element={<ActivityDeletePage/>}/>
-
-
+            <Route path={ATTENDANCE_PAGE} element={<EventRegistrationForm/>}/>
+            <Route path={ATTENDANCE_SUCCESS} element={<EventSuccessPage/>}/>
         </Routes>
     );
 }
