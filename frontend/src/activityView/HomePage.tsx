@@ -4,10 +4,55 @@ import LayoutContainer from '../common/LayoutContainer';
 import {useNavigate} from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import './calendarStyles.css'; // Custom calendar styles
+import './calendarStyles.css';
+import {useEffect, useState} from "react";
+import {userIdSignal} from "../store/sessionSignal.ts"; // Custom calendar styles
+import {format, parseISO} from 'date-fns';
+import {PAGE_ACTIVITY} from "../PathConstants.tsx";
+import config from "../../config.ts";
 
 export default function TaskHomePage() {
     const navigate = useNavigate();
+    const [home, setHome] = useState<DashboardResponse | null>(null);
+
+    type Activity = {
+        title: string;
+        type: 'event' | 'task';
+        startTime?: string; // ISO date string
+        time?: string;      // ISO date string (optional fallback)
+    };
+
+    type Stat = {
+        past?: number;      // for events
+        completed?: number; // for tasks
+        total: number;
+    };
+
+    type DashboardResponse = {
+        name: string,
+        activities: Activity[];
+        events: Stat;
+        tasks: Stat;
+        logs: string[];
+    };
+
+    useEffect(() => {
+        async function fetchClubs() {
+            try {
+                const response = await fetch(config.apiBaseUrl + `/homeview/${userIdSignal.value}`);
+                if (response.ok) {
+                    const data: DashboardResponse = await response.json();
+                    setHome(data);
+                } else {
+                    console.error('Failed to fetch clubs');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        fetchClubs();
+    }, []);
 
     return (
         <LayoutContainer>
@@ -43,7 +88,7 @@ export default function TaskHomePage() {
                         fontWeight="bold"
                         sx={{textAlign: 'left', width: '100%'}}
                     >
-                        Hi Matthew 👋
+                        Hi {home?.name} 👋
                     </Typography>
 
                     {/* Top Row */}
@@ -59,12 +104,18 @@ export default function TaskHomePage() {
                                 color: 'white',
                             }}
                         >
+
                             <Typography variant="h6" fontWeight="bold" gutterBottom>
                                 Upcoming Activities
                             </Typography>
-                            <Typography>• Sponsorship Meeting — <strong>2:00 PM</strong></Typography>
-                            <Typography>• MAC × MAPS Workshop — <strong>11:00 AM</strong></Typography>
-                            <Typography>• Portfolio Meetup — <strong>10:00 PM</strong></Typography>
+                            {home?.activities.map(activity => (
+                                <Typography key={activity.title}>
+                                    • {activity.title}
+                                    <strong>
+                                        {activity.time && ` ${format(parseISO(activity.time), 'dd MM yyyy HH:mm')}`}
+                                    </strong>
+                                </Typography>
+                            ))}
                         </Paper>
 
                         <Paper
@@ -81,7 +132,11 @@ export default function TaskHomePage() {
                             <Typography variant="h6" fontWeight="bold" gutterBottom>
                                 Activities Overview
                             </Typography>
-                            <Typography sx={{mb: 2}}>5 out of 12 activities completed</Typography>
+                            <Typography sx={{mb: 2}}>{home?.events?.past} out of {home?.events?.total} events
+                                completed</Typography>
+                            <Typography sx={{mb: 2}}>{home?.tasks?.completed} out of {home?.tasks?.total} tasks
+                                completed</Typography>
+
                             <Button
                                 variant="contained"
                                 startIcon={<AddIcon/>}
@@ -91,7 +146,7 @@ export default function TaskHomePage() {
                                     textTransform: 'none',
                                     color: 'white',
                                 }}
-                                onClick={() => navigate('/create-activity')}
+                                onClick={() => navigate(PAGE_ACTIVITY)}
                             >
                                 Create a new activity
                             </Button>
@@ -140,9 +195,10 @@ export default function TaskHomePage() {
                             <Typography variant="h6" fontWeight="bold" gutterBottom>
                                 Activity
                             </Typography>
-                            <Typography>• Matthew created a new event.</Typography>
-                            <Typography>• Michelle updated MAC × MAPS Workshop event.</Typography>
-                            <Typography>• Matthew updated Sponsorship contract task.</Typography>
+                            {home?.logs.map(
+                                log =>
+                                    <Typography>{log}</Typography>
+                            )}
                         </Paper>
                     </Box>
                 </Box>

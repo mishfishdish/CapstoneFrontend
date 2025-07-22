@@ -184,7 +184,7 @@ export default function GanttChartPage() {
                             <Gantt
                                 onClick={handleEventClick}
                                 tasks={event as any}
-                                columnWidth={100}
+                                columnWidth={85}
                                 viewMode={view}
                                 listCellWidth=""
                             />

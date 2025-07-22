@@ -10,6 +10,7 @@ import {
 } from "./handlers/onboarding/OnboardingHandlers.ts";
 import {resolveStubToken} from "./middleware/token.ts";
 import {
+    homeViewHandler,
     listActivitiesHandler,
     listClubsHandler,
     listEventDetailsHandler,
@@ -64,6 +65,7 @@ app.put('/api/tasks/:tasksId', updateTaskHandler)
 
 //attendance
 app.post('/api/attendance/:eventId', eventRegistrationHandler);
+app.get('/api/homeview/:userId', homeViewHandler)
 
 // Start the server
 app.listen(PORT, () => {
