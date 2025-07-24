@@ -50,7 +50,7 @@ app.post('/api/clubs/invite', inviteClubHandler)
 // General endpoints
 app.get('/api/users/:userId/clubs', listClubsHandler);
 app.get('/api/clubs/:clubId/events', listEventsHandler);
-app.get('/api/clubs/:clubId/activity', listActivitiesHandler);
+app.get('/api/clubs/activity', listActivitiesHandler);
 app.get('/api/events/:eventId', listEventDetailsHandler);
 app.get('/api/tasks/:taskId', listTaskDetailsHandler);
 

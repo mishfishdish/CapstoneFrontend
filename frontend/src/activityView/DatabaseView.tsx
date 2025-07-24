@@ -1,28 +1,84 @@
-import {Box, FormControl, InputLabel, MenuItem, Pagination, Select, TextField, Typography,} from '@mui/material';
+import {useEffect, useState} from 'react';
+import {
+    Alert,
+    Box,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Pagination,
+    Select,
+    Snackbar,
+    TextField,
+    Typography
+} from '@mui/material';
 import LayoutContainer from '../common/LayoutContainer';
-import {useState} from 'react';
+import config from '../../config';
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
-export default function DatabaseViewPage() {
+export default function ActivityPage() {
     const [sort, setSort] = useState('Date');
     const [selectedClub, setSelectedClub] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
+    const [activities, setActivities] = useState<any[]>([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
+    const [showError, setShowError] = useState(false);
 
-    const clubOptions = [
-        {clubId: 'mac', clubName: 'MAC'},
-        {clubId: 'maps', clubName: 'MAPS'},
-    ];
 
-    const filteredActivities = [
-        {id: 1, title: 'Sponsorship Meeting', datetime: '10 May 2024 2:00 PM'},
-        {id: 2, title: 'Complete Sponsorship Draft', datetime: '10 June 2024 10:00 PM'},
-        {id: 3, title: 'Internal Club Meeting', datetime: '31 August 2024 10:00 PM'},
-        {id: 4, title: 'Monash Coding Event', datetime: '10 September 2024 10:00 PM'},
-    ];
+    useEffect(() => {
+        async function fetchClubs() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setClubOptions(data);
+                    if (data.length > 0) {
+                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                    }
+                } else {
+                    setShowError(true);
+                    alert('Failed to fetch clubs');
+                }
+            } catch (err) {
+                setShowError(true);
+                alert('Failed to fetch clubs');
+            }
+        }
 
+        fetchClubs();
+    }, []);
+
+    // Fetch activities whenever dependencies change
+    useEffect(() => {
+        const fetchActivities = async () => {
+            try {
+                // Prepare query params
+                const params = new URLSearchParams({
+                    sort: sort.toLowerCase(), // e.g., 'date' or 'title'
+                    clubId: selectedClub === 'All' ? '' : selectedClub,
+                    search: searchQuery,
+                    page: (page - 1).toString(), // backend expects 0-indexed
+                    size: '10'
+                });
+
+                const response = await fetch(`${config.apiBaseUrl}/clubs/activity?${params.toString()}`);
+                const data = await response.json();
+
+                // Assuming response is Spring Data Page format
+                setActivities(data.content || []);
+                setTotalPages(data.totalPages || 1);
+            } catch (error) {
+                console.error('Failed to fetch activities:', error);
+            }
+        };
+
+        fetchActivities();
+    }, [sort, selectedClub, searchQuery, page]);
+
+    // @ts-ignore
     return (
         <LayoutContainer>
-
             <Box
                 sx={{
                     color: 'white',
@@ -53,6 +109,7 @@ export default function DatabaseViewPage() {
                         Database view
                     </Typography>
 
+                    {/* Filters */}
                     <Box
                         sx={{
                             display: 'flex',
@@ -86,7 +143,7 @@ export default function DatabaseViewPage() {
                             <Select
                                 labelId="club-label"
                                 value={selectedClub}
-                                onChange={(e) => setClub(e.target.value)}
+                                onChange={(e) => setSelectedClub(e.target.value)}
                                 label="Club"
                                 sx={{
                                     minWidth: 150,
@@ -106,9 +163,12 @@ export default function DatabaseViewPage() {
                         </FormControl>
                     </Box>
 
+                    {/* Search */}
                     <TextField
                         fullWidth
                         placeholder="Search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         variant="outlined"
                         sx={{
                             mb: 3,
@@ -118,6 +178,7 @@ export default function DatabaseViewPage() {
                         }}
                     />
 
+                    {/* Activity Cards */}
                     <Box
                         sx={{
                             display: 'flex',
@@ -126,9 +187,9 @@ export default function DatabaseViewPage() {
                             mb: 3,
                         }}
                     >
-                        {filteredActivities.map((a) => (
+                        {activities.map((a) => (
                             <Box
-                                key={a.id}
+                                key={a.activityId}
                                 sx={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -137,26 +198,46 @@ export default function DatabaseViewPage() {
                                     p: 2,
                                 }}
                             >
-                                <Typography fontWeight="bold">{a.title}</Typography>
-                                <Typography>{a.date}</Typography>
+                                <Typography fontWeight="bold">{a.activityTitle}</Typography>
+                                <Typography>
+                                    {a.startTime
+                                        ? new Date(a.startTime).toLocaleString()
+                                        : new Date(a.endTime).toLocaleString()}
+                                </Typography>
                             </Box>
                         ))}
                     </Box>
 
+                    {/* Pagination */}
                     <Box sx={{display: 'flex', justifyContent: 'center'}}>
-                        <Pagination count={10} page={page} sx={{
-                            '& .MuiPaginationItem-root': {
-                                color: 'white',
-                                borderColor: 'white',
-                            },
-                            '& .Mui-selected': {
-                                backgroundColor: 'rgba(255,255,255,0.2)',
-                                color: 'white',
-                            },
-                        }} onChange={() => "hello"}/>
+                        <Pagination
+                            count={totalPages}
+                            page={page}
+                            onChange={(_e, value) => setPage(value)}
+                            sx={{
+                                '& .MuiPaginationItem-root': {
+                                    color: 'white',
+                                    borderColor: 'white',
+                                },
+                                '& .Mui-selected': {
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: 'white',
+                                },
+                            }}
+                        />
                     </Box>
                 </Box>
             </Box>
+            <Snackbar
+                open={showError}
+                autoHideDuration={5000}
+                onClose={() => setShowError(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                    Activity creation failed.
+                </Alert>
+            </Snackbar>
         </LayoutContainer>
     );
 }

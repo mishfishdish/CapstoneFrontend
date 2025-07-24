@@ -64,7 +64,7 @@ export default function GanttChartPage() {
 
         async function fetchActivities() {
             try {
-                const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/activity`);
+                const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${clubIdSignal.value}`);
                 if (response.ok) {
                     const rawData = await response.json();
                     const parsed = rawData
