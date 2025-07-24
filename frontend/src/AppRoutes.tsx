@@ -16,6 +16,7 @@ import {
     PAGE_GANTT,
     PAGE_HOME,
     PAGE_LOGIN,
+    PAGE_MASS_IMPORT,
     PAGE_REGISTRATION,
     PAGE_REGISTRATION_SUCCESS,
     PAGE_UPDATE_EVENT,
@@ -42,6 +43,7 @@ import UpdateTaskPage from "./activityManagement/UpdateTask.tsx";
 import EventSuccessPage from "./attendance/EventSuccessPage.tsx";
 import EventRegistrationForm from "./attendance/EventRegistrationForm.tsx";
 import DatabaseView from './activityView/DatabaseView.tsx';
+import MassImportPage from "./activityManagement/MassImport.tsx";
 
 
 export default function AppRoutes() {
@@ -67,8 +69,7 @@ export default function AppRoutes() {
             <Route path={ATTENDANCE_PAGE} element={<EventRegistrationForm/>}/>
             <Route path={ATTENDANCE_SUCCESS} element={<EventSuccessPage/>}/>
             <Route path={PAGE_DATABASE} element={<DatabaseView/>}/>
-
-
+            <Route path={PAGE_MASS_IMPORT} element={<MassImportPage/>}/>
         </Routes>
     );
 }
