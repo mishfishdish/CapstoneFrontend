@@ -22,7 +22,6 @@ import {
     createTasksHandler,
     deleteEventsHandler,
     deleteTaskHandler,
-    importActivityHandler,
     updateEventsHandler,
     updateTaskHandler
 } from "./handlers/activityManagement/ActivityManagementHandlers.ts";
@@ -64,7 +63,6 @@ app.delete('/api/events/:eventId', deleteEventsHandler)
 app.put('/api/events/:eventId', updateEventsHandler)
 app.delete('/api/tasks/:taskId', deleteTaskHandler)
 app.put('/api/tasks/:tasksId', updateTaskHandler)
-app.post('/api/import', importActivityHandler)
 
 
 //attendance
