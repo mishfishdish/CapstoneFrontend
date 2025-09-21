@@ -87,7 +87,6 @@ export default function ManualRegistrationPage() {
                             role: formData.email
                         }),
                     });
-
                     if (clubResponse.ok) {
                         navigate(PAGE_REGISTRATION_SUCCESS);
 
@@ -95,6 +94,9 @@ export default function ManualRegistrationPage() {
                         setShowError(true);
                         alert('Registration failed.');
                     }
+                } else {
+                    navigate(PAGE_REGISTRATION_SUCCESS);
+
                 }
 
 

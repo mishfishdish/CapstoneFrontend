@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {Alert, Box, Button, Container, Snackbar, Stack, TextField, Typography} from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 import {useNavigate} from 'react-router-dom';
-import {PAGE_CLUB_SETTINGS, PAGE_REGISTRATION} from "../PathConstants.tsx";
+import {PAGE_HOME, PAGE_REGISTRATION} from "../PathConstants.tsx";
 import config from "../../config.ts";
 import {userIdSignal} from ".././store/sessionSignal.ts";
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
             if (response.ok) {
                 const data = await response.json(); // ⬅️ Parse JSON response
                 userIdSignal.value = data.userId
-                navigate(PAGE_CLUB_SETTINGS);
+                navigate(PAGE_HOME);
             } else {
                 setError(true);
             }

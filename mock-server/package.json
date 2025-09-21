@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node_modules/.bin/ts-node server.ts",
-    "dev": "node_modules/.bin/ts-node-dev --respawn server.ts",
+    "dev": "ts-node-esm ./mock-server/server.ts",
     "build": "node_modules/.bin/tsc"
   },
   "dependencies": {
