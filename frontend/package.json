@@ -28,6 +28,8 @@
     "jwt-decode": "^4.0.0",
     "react-dropzone": "^14.2.3",
     "papaparse": "^5.4.1",
-    "cypress": "^13.14.2"
+    "cypress": "^13.14.2",
+    "chart.js": "^4.4.4",
+    "react-chartjs-2": "^5.2.0"
   }
 }

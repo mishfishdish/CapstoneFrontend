@@ -3,6 +3,8 @@ import RegistrationSuccessPage from "./onboarding/RegistrationSuccessPage.tsx";
 import {
     ATTENDANCE_PAGE,
     ATTENDANCE_SUCCESS,
+    COMPARISON_ANALYTICS,
+    MAIN_ANALYTICS,
     PAGE_ACTIVITY,
     PAGE_ADD_MEMBER,
     PAGE_CALENDAR,
@@ -44,6 +46,8 @@ import EventSuccessPage from "./attendance/EventSuccessPage.tsx";
 import EventRegistrationForm from "./attendance/EventRegistrationForm.tsx";
 import DatabaseView from './activityView/DatabaseView.tsx';
 import MassImportPage from "./activityManagement/MassImport.tsx";
+import AnalyticsPage from "./analytics/MainAnalyticsReport.tsx";
+import MultiClubComparisonPage from "./analytics/ComparisonAnalyticsReport.tsx";
 
 
 export default function AppRoutes() {
@@ -70,6 +74,10 @@ export default function AppRoutes() {
             <Route path={ATTENDANCE_SUCCESS} element={<EventSuccessPage/>}/>
             <Route path={PAGE_DATABASE} element={<DatabaseView/>}/>
             <Route path={PAGE_MASS_IMPORT} element={<MassImportPage/>}/>
+            <Route path={MAIN_ANALYTICS} element={<AnalyticsPage/>}/>
+            <Route path={COMPARISON_ANALYTICS} element={<MultiClubComparisonPage/>}/>
+
+
         </Routes>
     );
 }

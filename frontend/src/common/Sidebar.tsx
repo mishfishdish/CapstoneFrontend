@@ -12,14 +12,22 @@ import {
 } from '@mui/material';
 import {AddCircleOutline, BarChart, CalendarMonth, Checklist, Description, Home, Settings,} from '@mui/icons-material';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {PAGE_CALENDAR, PAGE_CLUB_SETTINGS, PAGE_GANTT} from "../PathConstants.tsx";
+import {
+    MAIN_ANALYTICS,
+    PAGE_ACTIVITY,
+    PAGE_CALENDAR,
+    PAGE_CLUB_SETTINGS,
+    PAGE_DATABASE,
+    PAGE_GANTT,
+    PAGE_HOME
+} from "../PathConstants.tsx";
 
 const navItems = [
-    {label: 'Home Dashboard', icon: <Home/>, path: '/'},
+    {label: 'Home Dashboard', icon: <Home/>, path: PAGE_HOME},
     {label: 'Calendar', icon: <CalendarMonth/>, path: PAGE_CALENDAR},
     {label: 'Gantt Chart', icon: <Checklist/>, path: PAGE_GANTT},
-    {label: 'Database View', icon: <Description/>, path: '/database'},
-    {label: 'Analytic Reports', icon: <BarChart/>, path: '/reports'},
+    {label: 'Database View', icon: <Description/>, path: PAGE_DATABASE},
+    {label: 'Analytic Reports', icon: <BarChart/>, path: MAIN_ANALYTICS},
     {label: 'Settings', icon: <Settings/>, path: PAGE_CLUB_SETTINGS},
 ];
 
@@ -61,7 +69,7 @@ export default function Sidebar() {
                     variant="contained"
                     fullWidth
                     startIcon={<AddCircleOutline/>}
-                    onClick={() => navigate('/createActivity')}
+                    onClick={() => navigate(PAGE_ACTIVITY)}
                     sx={{bgcolor: '#00adb5', '&:hover': {bgcolor: '#00cfd1'}}}
                 >
                     Create Activity
