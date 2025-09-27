@@ -1,42 +1,74 @@
-import {Box, Button, CircularProgress, LinearProgress, MenuItem, Select, Typography} from "@mui/material";
+import {Box, Button, MenuItem, Select, Typography} from "@mui/material";
 import {CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Tooltip,} from "chart.js";
 import {Line} from "react-chartjs-2";
 import LayoutContainer from "../common/LayoutContainer.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {COMPARISON_ANALYTICS} from "../PathConstants.tsx";
+import {People} from "@mui/icons-material";
+import config from "../../config.ts";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-export default function AnalyticsPage() {
-    const attendance = 72;
-    const taskCompletion = 86;
 
-    // Dropdown state
-    const [selectedClub, setSelectedClub] = useState("Monash Dancing Club");
+export default function AnalyticsPage() {
+    const [analytics, setAnalytics] = useState<any[]>([]);
+    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
+    const [selectedClub, setSelectedClub] = useState<string>("");
+
     const navigate = useNavigate();
 
+    const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+        const newClubId = event.target.value as string;
+        setSelectedClub(newClubId);
+        clubIdSignal.value = newClubId;
+    };
 
-    const clubs = ["Monash Dancing Club", "Monash Poetry Club", "Monash Music Club"];
+    useEffect(() => {
+        async function fetchAnalytics() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/analytic/${userIdSignal.value}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setAnalytics(data);
+                    setClubOptions(
+                        data.map((object: any) => ({
+                            clubId: object.clubId,
+                            clubName: object.clubName,
+                        }))
+                    );
+                    if (data.length > 0) {
+                        setSelectedClub(data[0].clubId);
+                        clubIdSignal.value = data[0].clubId;
+                    }
+                } else {
+                    alert("Failed to fetch analytics");
+                }
+            } catch (err) {
+                alert("Failed to fetch analytics");
+            }
+        }
 
-    // Chart Data
+        fetchAnalytics();
+    }, []);
+
+    // Find data for selected club
+    const selectedClubData = analytics.find((club) => club.clubId === selectedClub);
+
+    const attendance = selectedClubData?.attendanceThisMonth ?? 0;
+    const tasks = selectedClubData?.tasks ?? {completed: 0, overdue: 0, ongoing: 0};
+    const totalTasks = tasks.completed + tasks.overdue + tasks.ongoing;
+
+    // Chart data for last 12 months
     const data = {
-        labels: [
-            "Week 1",
-            "Week 2",
-            "Week 3",
-            "Week 4",
-            "Week 5",
-            "Week 6",
-            "Week 7",
-            "Week 8",
-        ],
+        labels: selectedClubData?.attendanceLast12Months?.map((m: any) => m.month) ?? [],
         datasets: [
             {
-                label: `${selectedClub} Attendance %`,
-                data: [18, 65, 60, 82, 20, 45, 78, 72],
-                borderColor: "rgba(99, 132, 255, 1)",       // Blue line
-                backgroundColor: "rgba(99, 132, 255, 0.2)", // Blue fill for points
+                label: `${selectedClubData?.clubName ?? ""} Attendance`,
+                data: selectedClubData?.attendanceLast12Months?.map((m: any) => m.value) ?? [],
+                borderColor: "rgba(99, 132, 255, 1)",
+                backgroundColor: "rgba(99, 132, 255, 0.2)",
                 pointBackgroundColor: "rgba(99, 132, 255, 1)",
                 pointBorderColor: "#fff",
                 tension: 0.4,
@@ -44,14 +76,12 @@ export default function AnalyticsPage() {
         ],
     };
 
-    // Chart Options
     const options = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
             y: {
                 min: 0,
-                max: 100,
                 ticks: {color: "white"},
                 grid: {color: "rgba(255,255,255,0.1)"},
             },
@@ -62,15 +92,18 @@ export default function AnalyticsPage() {
         },
         plugins: {
             legend: {display: false},
-            tooltip: {
-                backgroundColor: "rgba(30,30,40,0.9)",
-                titleColor: "#fff",
-                bodyColor: "#fff",
-                borderColor: "rgba(99,132,255,0.6)",
-                borderWidth: 1,
-            },
         },
     };
+
+    // Attendance people figures
+    const figureValue = 10;
+    const fullFigures = Math.floor(attendance / figureValue);
+    const remainder = attendance % figureValue;
+
+    // Task breakdown as percentages
+    const completedPct = totalTasks > 0 ? (tasks.completed / totalTasks) * 100 : 0;
+    const overduePct = totalTasks > 0 ? (tasks.overdue / totalTasks) * 100 : 0;
+    const ongoingPct = totalTasks > 0 ? (tasks.ongoing / totalTasks) * 100 : 0;
 
     return (
         <LayoutContainer>
@@ -103,18 +136,18 @@ export default function AnalyticsPage() {
                         {/* Dropdown */}
                         <Select
                             value={selectedClub}
-                            onChange={(e) => setSelectedClub(e.target.value)}
+                            onChange={handleChange as any}
                             sx={{
-                                minWidth: 200,
+                                minWidth: 250,
                                 bgcolor: "rgba(255,255,255,0.08)",
                                 color: "white",
                                 borderRadius: 2,
                                 ".MuiSvgIcon-root": {color: "white"},
                             }}
                         >
-                            {clubs.map((club) => (
-                                <MenuItem key={club} value={club}>
-                                    {club}
+                            {clubOptions.map((club) => (
+                                <MenuItem key={club.clubId} value={club.clubId}>
+                                    {club.clubName}
                                 </MenuItem>
                             ))}
                         </Select>
@@ -129,7 +162,7 @@ export default function AnalyticsPage() {
                                 "&:hover": {bgcolor: "rgba(99,132,255,0.85)"},
                             }}
                             onClick={() => {
-                                navigate(COMPARISON_ANALYTICS)
+                                navigate(COMPARISON_ANALYTICS);
                             }}
                         >
                             Multi-Comparison View
@@ -138,14 +171,7 @@ export default function AnalyticsPage() {
                 </Box>
 
                 {/* KPI Cards */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        gap: 3,
-                        mb: 4,
-                        flexWrap: "wrap",
-                    }}
-                >
+                <Box sx={{display: "flex", gap: 3, mb: 4, flexWrap: "wrap"}}>
                     {/* Attendance Card */}
                     <Box
                         sx={{
@@ -158,46 +184,33 @@ export default function AnalyticsPage() {
                         }}
                     >
                         <Typography variant="subtitle2" color="white">
-                            AVG ATTENDANCE
-                        </Typography>
-                        <Typography variant="h4" fontWeight="bold" mt={1} color="white">
-                            {attendance}%
+                            ATTENDANCE
                         </Typography>
                         <Typography variant="body2" mt={1} color="white">
-                            55 This Week
+                            {attendance} This Month
                         </Typography>
                         <Box
                             sx={{
-                                position: "relative",
-                                display: "inline-flex",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
                                 mt: 2,
+                                gap: 1.5,
+                                maxWidth: 200,
+                                mx: "auto",
                             }}
                         >
-                            <CircularProgress
-                                variant="determinate"
-                                value={attendance}
-                                size={80}
-                                thickness={5}
-                                sx={{color: "rgba(99,132,255,1)"}}
-                            />
-                            <Box
-                                sx={{
-                                    top: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    right: 0,
-                                    position: "absolute",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <Typography color="white">{attendance}%</Typography>
-                            </Box>
+                            {[...Array(fullFigures)].map((_, i) => (
+                                <People key={i} sx={{color: "#4cafef", fontSize: 36}}/>
+                            ))}
+
+                            {remainder > 0 && (
+                                <People sx={{color: "rgba(76, 175, 239, 0.5)", fontSize: 36}}/>
+                            )}
                         </Box>
                     </Box>
 
-                    {/* Task Completion Card */}
+                    {/* Task Breakdown Card */}
                     <Box
                         sx={{
                             flex: "1 1 250px",
@@ -209,30 +222,37 @@ export default function AnalyticsPage() {
                         }}
                     >
                         <Typography variant="subtitle2" color="white">
-                            TASK COMPLETION
+                            TASKS
                         </Typography>
-                        <Typography variant="h4" fontWeight="bold" mt={1} color="white">
-                            {taskCompletion}%
-                        </Typography>
-                        <Typography variant="body2" mt={1} color="white">
-                            DANCE PRACTICE JULY
-                        </Typography>
-                        <LinearProgress
-                            variant="determinate"
-                            value={75}
-                            sx={{
-                                mt: 2,
-                                height: 10,
-                                borderRadius: 5,
-                                bgcolor: "rgba(255,255,255,0.1)",
-                                "& .MuiLinearProgress-bar": {
-                                    backgroundColor: "rgba(99,132,255,1)",
-                                },
-                            }}
-                        />
-                        <Typography variant="caption" mt={1} display="block" color="white">
-                            Task Completion for all events
-                        </Typography>
+
+                        {/* Stacked bar */}
+                        <Box sx={{mt: 2}}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    height: 14,
+                                    borderRadius: 7,
+                                    overflow: "hidden",
+                                }}
+                            >
+                                <Box sx={{width: `${completedPct}%`, bgcolor: "#4caf50"}}/>
+                                <Box sx={{width: `${ongoingPct}%`, bgcolor: "#ff9800"}}/>
+                                <Box sx={{width: `${overduePct}%`, bgcolor: "#f44336"}}/>
+                            </Box>
+
+                            {/* Legend */}
+                            <Box sx={{display: "flex", justifyContent: "space-between", mt: 1}}>
+                                <Typography variant="caption" color="white">
+                                    ✅ Completed: {tasks.completed}
+                                </Typography>
+                                <Typography variant="caption" color="white">
+                                    ⏳ Ongoing: {tasks.ongoing}
+                                </Typography>
+                                <Typography variant="caption" color="white">
+                                    ⚠️ Overdue: {tasks.overdue}
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Box>
                 </Box>
 

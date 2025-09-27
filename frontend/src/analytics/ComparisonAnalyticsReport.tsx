@@ -1,67 +1,65 @@
-import {Box, Checkbox, ListItemText, MenuItem, Select, Typography} from "@mui/material";
-import {CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Tooltip,} from "chart.js";
+import {useEffect, useState} from "react";
+import {Box, Checkbox, ListItemText, MenuItem, Select, Typography,} from "@mui/material";
 import {Line} from "react-chartjs-2";
+import {CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Tooltip,} from "chart.js";
 import LayoutContainer from "../common/LayoutContainer.tsx";
-import {useState} from "react";
+import config from "../../config.ts";
+import {userIdSignal} from "../store/sessionSignal.ts";
 
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
-
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 export default function MultiClubComparisonPage() {
-    const allClubs = [
-        {name: "Monash Dancing Club", color: "rgba(0, 200, 180, 1)"},
-        {name: "Monash Poetry Club", color: "rgba(255, 165, 0, 1)"},
-        {name: "Monash Music Club", color: "rgba(138, 43, 226, 1)"},
-        {name: "Monash Chess Club", color: "rgba(255, 99, 132, 1)"},
-    ];
+    const [analytics, setAnalytics] = useState<any[]>([]);
+    const [selectedClubs, setSelectedClubs] = useState<string[]>([]);
 
-    const [selectedClubs, setSelectedClubs] = useState<string[]>([
-        "Monash Dancing Club",
-        "Monash Poetry Club",
-    ]);
-
-    // Fake dataset generator
-    const generateData = (club: string) => {
-        switch (club) {
-            case "Monash Dancing Club":
-                return [18, 65, 60, 82, 40, 70, 78, 72];
-            case "Monash Poetry Club":
-                return [25, 55, 50, 68, 35, 65, 55, 60];
-            case "Monash Music Club":
-                return [30, 45, 70, 60, 50, 75, 65, 80];
-            case "Monash Chess Club":
-                return [20, 35, 40, 55, 60, 45, 50, 65];
-            default:
-                return [];
+    // Fetch once on mount
+    useEffect(() => {
+        async function fetchAnalytics() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/clubs/analytic/${userIdSignal.value}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setAnalytics(data);
+                    // default: pick first 2 clubs if available
+                    setSelectedClubs(data.slice(0, 2).map((c: any) => c.clubName));
+                }
+            } catch (err) {
+                alert("Failed to fetch analytics for multi-club comparison");
+            }
         }
-    };
 
-    // Build chart datasets from selected clubs
-    const datasets = selectedClubs.map((club) => {
-        const clubMeta = allClubs.find((c) => c.name === club)!;
-        return {
-            label: club,
-            data: generateData(club),
-            borderColor: clubMeta.color,
-            backgroundColor: clubMeta.color.replace("1)", "0.2)"), // semi-transparent fill
-            pointBackgroundColor: clubMeta.color,
-            pointBorderColor: "#fff",
-            tension: 0.4,
-        };
-    });
+        fetchAnalytics();
+    }, []);
+
+    // Build datasets for chart
+    const datasets =
+        analytics
+            .filter((club) => selectedClubs.includes(club.clubName))
+            .map((club, idx) => {
+                // pick a color per club (fallback: cycle a palette)
+                const colors = [
+                    "rgba(0,200,180,1)",
+                    "rgba(255,165,0,1)",
+                    "rgba(138,43,226,1)",
+                    "rgba(255,99,132,1)",
+                    "rgba(99,132,255,1)",
+                ];
+                const color = colors[idx % colors.length];
+
+                return {
+                    label: club.clubName,
+                    data: club.attendanceLast12Months.map((m: any) => m.value),
+                    borderColor: color,
+                    backgroundColor: color.replace("1)", "0.2)"),
+                    pointBackgroundColor: color,
+                    pointBorderColor: "#fff",
+                    tension: 0.4,
+                };
+            });
 
     const data = {
-        labels: [
-            "Week 1",
-            "Week 2",
-            "Week 3",
-            "Week 4",
-            "Week 5",
-            "Week 6",
-            "Week 7",
-            "Week 8",
-        ],
+        labels:
+            analytics[0]?.attendanceLast12Months?.map((m: any) => m.month) ?? [],
         datasets,
     };
 
@@ -71,7 +69,6 @@ export default function MultiClubComparisonPage() {
         scales: {
             y: {
                 min: 0,
-                max: 100,
                 ticks: {color: "white"},
                 grid: {color: "rgba(255,255,255,0.1)"},
             },
@@ -81,10 +78,7 @@ export default function MultiClubComparisonPage() {
             },
         },
         plugins: {
-            legend: {
-                position: "top" as const,
-                labels: {color: "white"},
-            },
+            legend: {position: "top" as const, labels: {color: "white"}},
             tooltip: {
                 backgroundColor: "rgba(30,30,40,0.9)",
                 titleColor: "#fff",
@@ -95,12 +89,9 @@ export default function MultiClubComparisonPage() {
         },
     };
 
-    // Handle dropdown changes (limit 2 selections)
     const handleChange = (event: any) => {
         const value = event.target.value as string[];
-        if (value.length <= 2) {
-            setSelectedClubs(value);
-        }
+        if (value.length <= 2) setSelectedClubs(value);
     };
 
     return (
@@ -142,19 +133,19 @@ export default function MultiClubComparisonPage() {
                             ".MuiSvgIcon-root": {color: "white"},
                         }}
                     >
-                        {allClubs.map((club) => (
-                            <MenuItem key={club.name} value={club.name}>
+                        {analytics.map((club) => (
+                            <MenuItem key={club.clubId} value={club.clubName}>
                                 <Checkbox
-                                    checked={selectedClubs.indexOf(club.name) > -1}
+                                    checked={selectedClubs.indexOf(club.clubName) > -1}
                                     sx={{color: "white"}}
                                 />
-                                <ListItemText primary={club.name}/>
+                                <ListItemText primary={club.clubName}/>
                             </MenuItem>
                         ))}
                     </Select>
                 </Box>
 
-                {/* KPI Cards */}
+                {/* KPI Cards for selected clubs */}
                 <Box
                     sx={{
                         display: "flex",
@@ -163,33 +154,30 @@ export default function MultiClubComparisonPage() {
                         flexWrap: "wrap",
                     }}
                 >
-                    {selectedClubs.map((club) => (
-                        <Box
-                            key={club}
-                            sx={{
-                                flex: "1 1 250px",
-                                bgcolor: "rgba(255,255,255,0.06)",
-                                borderRadius: 4,
-                                p: 3,
-                                backdropFilter: "blur(12px)",
-                                boxShadow: "0 0 20px rgba(0,0,0,0.2)",
-                            }}
-                        >
-                            <Typography variant="subtitle2" color="white">
-                                {club}
-                            </Typography>
-                            <Typography variant="h4" fontWeight="bold" mt={1} color="white">
-                                {Math.round(
-                                    generateData(club).reduce((a, b) => a + b, 0) /
-                                    generateData(club).length
-                                )}
-                                %
-                            </Typography>
-                            <Typography variant="body2" mt={1} color="white">
-                                Monthly Average
-                            </Typography>
-                        </Box>
-                    ))}
+                    {analytics
+                        .filter((club) => selectedClubs.includes(club.clubName))
+                        .map((club) => {
+                            return (
+                                <Box
+                                    key={club.clubId}
+                                    sx={{
+                                        flex: "1 1 250px",
+                                        bgcolor: "rgba(255,255,255,0.06)",
+                                        borderRadius: 4,
+                                        p: 3,
+                                        backdropFilter: "blur(12px)",
+                                        boxShadow: "0 0 20px rgba(0,0,0,0.2)",
+                                    }}
+                                >
+                                    <Typography variant="subtitle2" color="white">
+                                        {club.clubName}
+                                    </Typography>
+                                    <Typography variant="body2" mt={1} color="white">
+                                        {club.attendanceThisMonth} attended this month
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
                 </Box>
 
                 {/* Chart */}

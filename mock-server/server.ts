@@ -27,6 +27,7 @@ import {
     updateTaskHandler
 } from "./handlers/activityManagement/ActivityManagementHandlers.ts";
 import {eventRegistrationHandler} from "./handlers/attendance/AttendanceHandlers.ts";
+import {analyticsHandler} from "./handlers/analytics/AnalyticsHandlers.ts";
 
 
 const app = express()
@@ -69,6 +70,7 @@ app.post('/api/import', importActivityHandler)
 //attendance
 app.post('/api/attendance/:eventId', eventRegistrationHandler);
 app.get('/api/homeview/:userId', homeViewHandler)
+app.get('/api/clubs/analytic/:userId', analyticsHandler)
 
 // Start the server
 app.listen(PORT, () => {
