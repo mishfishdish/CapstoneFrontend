@@ -102,7 +102,7 @@ export default function CreateEventPage() {
                     title,
                     location,
                     clubs,
-                    parentEvent,
+                    parentEventId: parentEvent,
                     description,
                     ...(notifyMinutes != null && {
                         notification: {

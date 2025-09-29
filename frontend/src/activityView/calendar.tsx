@@ -79,12 +79,20 @@ export default function CalendarViewPage() {
                 const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${clubIdSignal.value}`);
                 if (response.ok) {
                     const rawData = await response.json();
+                    console.log("raw");
+                    console.log(rawData);
+                    // @ts-ignore
                     const parsed = rawData.map((activity: ActivityResponse): any => ({
                         ...activity,
-                        startTime: activity.startTime ? new Date(activity.startTime) : undefined,
+                        startTime: activity.startTime
+                            ? new Date(activity.startTime)
+                            : activity.endTime
+                                ? new Date(activity.endTime) // fallback for tasks
+                                : new Date(),
                         endTime: activity.endTime ? new Date(activity.endTime) : undefined,
                         title: activity.activityTitle
                     }));
+                    console.log(parsed)
                     setEvent(parsed);
                 } else {
                     setShowError(true);

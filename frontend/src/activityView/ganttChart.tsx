@@ -67,18 +67,27 @@ export default function GanttChartPage() {
                 const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${clubIdSignal.value}`);
                 if (response.ok) {
                     const rawData = await response.json();
-                    const parsed = rawData
-                        .filter((activity: ActivityResponse) => activity.startTime && activity.endTime) // eliminate nulls early
-                        .map((activity: ActivityResponse): any => ({
+                    const parsed = rawData.map((activity: ActivityResponse): any => {
+                        const start = activity.startTime
+                            ? new Date(activity.startTime)
+                            : activity.endTime
+                                ? new Date(activity.endTime)
+                                : new Date();
+
+                        let end = activity.endTime ? new Date(activity.endTime) : new Date(start);
+                        if (end.getTime() === start.getTime()) {
+                            end = new Date(start.getTime() + 24 * 60 * 60 * 1000); // +1 day
+                        }
+                        return {
                             id: activity.activityId,
                             name: activity.activityTitle,
-                            start: new Date(activity.startTime as string),
-                            end: new Date(activity.endTime as string),
-                            type: activity.type,
+                            start,
+                            end,
+                            type: activity.type === "task" ? "task" : "task", // gantt-task-react needs one of: task | project | milestone
                             dependencies: activity.dependsOnEventId ? [activity.dependsOnEventId] : [],
-                            progress: 0, // required by gantt-task-react
-                        }));// Remove nulls
-                    console.log(parsed)
+                            progress: 0,
+                        };
+                    });
                     setEvent(parsed);
                 } else {
                     setShowError(true);

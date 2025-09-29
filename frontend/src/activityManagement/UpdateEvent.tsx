@@ -1,3 +1,4 @@
+import React, {useEffect, useState} from "react";
 import {
     Alert,
     Box,
@@ -15,17 +16,15 @@ import {
     Select,
     Snackbar,
     TextField,
-    Typography
-} from '@mui/material';
-import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker';
-import {useEffect, useState} from 'react';
-import LayoutContainer from '../common/LayoutContainer.tsx';
-import config from '../../config.ts';
-import {clubIdSignal, userIdSignal} from '../store/sessionSignal.ts';
-import CloseIcon from '@mui/icons-material/Close';
+    Typography,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import {DateTimePicker} from "@mui/x-date-pickers";
 import {useNavigate, useSearchParams} from "react-router-dom";
+import {clubIdSignal, userIdSignal} from "../store/sessionSignal";
+import config from "../../config";
 import {PAGE_DELETE_SUCCESS, PAGE_UPDATE_SUCCESS} from "../PathConstants.tsx";
-
+import LayoutContainer from "../common/LayoutContainer.tsx";
 
 export interface ActivityResponse {
     activityId: string;
@@ -33,106 +32,118 @@ export interface ActivityResponse {
     startTime: string | null;
     endTime: string | null;
     dependsOnEventId: string | null;
-
 }
 
 export default function UpdateEventPage() {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
     const [endDate, setEndDate] = useState<Date | null>(new Date());
-    const [title, setTitle] = useState('');
-    const [location, setLocation] = useState('');
+    const [title, setTitle] = useState("");
+    const [location, setLocation] = useState("");
     const [clubs, setClubs] = useState<string[]>([]);
-    const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
+    const [clubOptions, setClubOptions] = useState<
+        { clubId: string; clubName: string }[]
+    >([]);
     const [eventOptions, setEventOptions] = useState<ActivityResponse[]>([]);
-    const [parentEvent, setParentEvent] = useState('');
-    const [description, setDescription] = useState('');
+    const [parentEvent, setParentEvent] = useState("");
+    const [description, setDescription] = useState("");
     const [notify, setNotify] = useState(false);
-    const [notifyMinutes, setNotifyMinutes] = useState('10');
+    const [notifyMinutes, setNotifyMinutes] = useState("10");
     const [showError, setShowError] = useState(false);
     const [showQR, setShowQR] = useState(false);
-    const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
+    // 1. Fetch the event by ID
     useEffect(() => {
         async function fetchEvent() {
+            const eventId = searchParams.get("eventId");
+            if (!eventId) return; // skip if not provided
+
             try {
-                const response = await fetch(`${config.apiBaseUrl}/events/${searchParams.get('eventId')}`);
+                const response = await fetch(`${config.apiBaseUrl}/events/${eventId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setStartDate(new Date(data.startTime))
-                    setEndDate(new Date(data.endTime))
-                    setTitle(data.title)
-                    setLocation(data.location)
-                    setClubs(data.clubs)
-                    setParentEvent(data.parentEventId)
-                    setDescription(data.description)
-                    setNotify(data.notifyBeforeMinutes != null)
+                    setStartDate(data.startTime ? new Date(data.startTime) : null);
+                    setEndDate(data.endTime ? new Date(data.endTime) : null);
+                    setTitle(data.title || "");
+                    setLocation(data.location || "");
+                    setClubs(data.clubs || []);
+                    setParentEvent(data.parentEventId || "");
+                    setDescription(data.description || "");
+                    setNotify(data.notifyBeforeMinutes != null);
                     if (data.notifyBeforeMinutes) {
                         setNotifyMinutes(data.notifyBeforeMinutes);
                     }
-                    setQrCodeDataUrl(data.qrCode)
+                    setQrCodeDataUrl(data.qrCode || "");
                 } else {
                     setShowError(true);
-                    alert('Failed to fetch event data');
                 }
-            } catch (err) {
+            } catch {
                 setShowError(true);
-                alert('Failed to fetch event data');
             }
         }
 
         fetchEvent();
-    }, []);
+    }, [searchParams]);
 
+    // 2. Fetch clubs for logged-in user
     useEffect(() => {
         async function fetchClubs() {
+            if (!userIdSignal.value) return; // skip until userId is set
+
             try {
-                const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
+                const response = await fetch(
+                    `${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setClubOptions(data);
                 } else {
                     setShowError(true);
-                    alert('Failed to fetch clubs');
                 }
-            } catch (err) {
+            } catch {
                 setShowError(true);
-                alert('Failed to fetch clubs');
             }
         }
 
         fetchClubs();
-    }, []);
+    }, [userIdSignal.value]);
 
+    // 3. Fetch events for selected club
     useEffect(() => {
         async function fetchEvents() {
+            if (!clubIdSignal.value) return; // skip until clubId is set
+
             try {
-                const response = await fetch(`${config.apiBaseUrl}/clubs/${clubIdSignal.value}/events`);
+                const response = await fetch(
+                    `${config.apiBaseUrl}/clubs/${clubIdSignal.value}/events`
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setEventOptions(data);
                 } else {
                     setShowError(true);
-                    alert('Failed to fetch events');
                 }
-            } catch (err) {
+            } catch {
                 setShowError(true);
-                alert('Failed to fetch events');
             }
         }
 
         fetchEvents();
-    }, [clubIdSignal]);
+    }, [clubIdSignal.value]);
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const eventId = searchParams.get("eventId");
+        if (!eventId) return;
+
         try {
-            const response = await fetch(config.apiBaseUrl + '/events/' + searchParams.get('eventId'), {
-                method: 'PUT',
-                credentials: 'include',
+            const response = await fetch(`${config.apiBaseUrl}/events/${eventId}`, {
+                method: "PUT",
+                credentials: "include",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     startTime: startDate,
@@ -153,39 +164,41 @@ export default function UpdateEventPage() {
             });
 
             if (response.ok) {
-                navigate(PAGE_UPDATE_SUCCESS)
+                navigate(PAGE_UPDATE_SUCCESS);
             } else {
                 setShowError(true);
             }
-        } catch (error) {
+        } catch {
             setShowError(true);
-            alert('Activity Creation Failed.');
+            alert("Activity Update Failed.");
         }
     };
 
     const handleDelete = async () => {
+        const eventId = searchParams.get("eventId");
+        if (!eventId) return;
+
         try {
-            const response = await fetch(config.apiBaseUrl + '/events/' + searchParams.get('eventId'), {
-                method: 'DELETE',
-                credentials: 'include',
+            const response = await fetch(`${config.apiBaseUrl}/events/${eventId}`, {
+                method: "DELETE",
+                credentials: "include",
                 headers: {
-                    'Content-Type': 'application/json',
-                }
+                    "Content-Type": "application/json",
+                },
             });
 
             if (response.ok) {
-                navigate(PAGE_DELETE_SUCCESS)
+                navigate(PAGE_DELETE_SUCCESS);
             } else {
                 setShowError(true);
             }
-        } catch (error) {
+        } catch {
             setShowError(true);
-            alert('Activity Deletion Failed.');
+            alert("Activity Deletion Failed.");
         }
     };
 
-    const handleShowQrCode = async () => {
-        // Simulated response delay
+    const handleShowQrCode = () => {
         setTimeout(() => {
             setShowQR(true);
         }, 500);
@@ -195,24 +208,24 @@ export default function UpdateEventPage() {
         <LayoutContainer>
             <Box
                 sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    minHeight: '100vh',
-                    ml: '240px',
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "100vh",
+                    ml: "240px",
                     px: 2,
                 }}
             >
                 <Box
                     sx={{
-                        width: '100%',
+                        width: "100%",
                         maxWidth: 600,
                         p: 4,
                         borderRadius: 4,
-                        bgcolor: 'rgba(255,255,255,0.08)',
-                        backdropFilter: 'blur(16px)',
-                        color: 'white',
-                        boxShadow: '0px 4px 20px rgba(0,0,0,0.3)',
+                        bgcolor: "rgba(255,255,255,0.08)",
+                        backdropFilter: "blur(16px)",
+                        color: "white",
+                        boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
                     }}
                 >
                     <Typography variant="h5" gutterBottom fontWeight={600}>
@@ -225,7 +238,7 @@ export default function UpdateEventPage() {
                         value={title}
                         variant="filled"
                         InputProps={{readOnly: true}}
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        sx={{my: 2, bgcolor: "white", borderRadius: 1}}
                     />
 
                     <Typography fontSize={14} fontWeight={500}>
@@ -234,7 +247,7 @@ export default function UpdateEventPage() {
                     <DateTimePicker
                         value={startDate}
                         onChange={setStartDate}
-                        sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
+                        sx={{my: 2, width: "100%", bgcolor: "white", borderRadius: 1}}
                     />
 
                     <Typography fontSize={14} fontWeight={500}>
@@ -243,9 +256,8 @@ export default function UpdateEventPage() {
                     <DateTimePicker
                         value={endDate}
                         onChange={setEndDate}
-                        sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
+                        sx={{my: 2, width: "100%", bgcolor: "white", borderRadius: 1}}
                     />
-
 
                     <TextField
                         fullWidth
@@ -253,10 +265,14 @@ export default function UpdateEventPage() {
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        sx={{my: 2, bgcolor: "white", borderRadius: 1}}
                     />
 
-                    <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                    <FormControl
+                        fullWidth
+                        variant="filled"
+                        sx={{my: 2, bgcolor: "white", borderRadius: 1}}
+                    >
                         <InputLabel>Clubs involved</InputLabel>
                         <Select
                             labelId="club-select-label"
@@ -265,8 +281,12 @@ export default function UpdateEventPage() {
                             onChange={(e) => setClubs(e.target.value as string[])}
                             renderValue={(selected) =>
                                 selected
-                                    .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
-                                    .join(', ')
+                                    .map(
+                                        (clubId) =>
+                                            clubOptions.find((c) => c.clubId === clubId)?.clubName ||
+                                            clubId
+                                    )
+                                    .join(", ")
                             }
                         >
                             {clubOptions.map((club) => (
@@ -278,9 +298,16 @@ export default function UpdateEventPage() {
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                    <FormControl
+                        fullWidth
+                        variant="filled"
+                        sx={{my: 2, bgcolor: "white", borderRadius: 1}}
+                    >
                         <InputLabel>Parent Event</InputLabel>
-                        <Select value={parentEvent} onChange={(e) => setParentEvent(e.target.value)}>
+                        <Select
+                            value={parentEvent}
+                            onChange={(e) => setParentEvent(e.target.value)}
+                        >
                             {eventOptions.map((activity: ActivityResponse) => (
                                 <MenuItem key={activity.activityId} value={activity.activityId}>
                                     {activity.activityTitle}
@@ -297,7 +324,7 @@ export default function UpdateEventPage() {
                         multiline
                         minRows={3}
                         variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        sx={{my: 2, bgcolor: "white", borderRadius: 1}}
                     />
 
                     <FormControlLabel
@@ -305,16 +332,23 @@ export default function UpdateEventPage() {
                             <Checkbox
                                 checked={notify}
                                 onChange={(e) => setNotify(e.target.checked)}
-                                sx={{color: 'white'}}
+                                sx={{color: "white"}}
                             />
                         }
                         label="Notify Event Via Email"
                     />
 
                     {notify && (
-                        <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                        <FormControl
+                            fullWidth
+                            variant="filled"
+                            sx={{my: 2, bgcolor: "white", borderRadius: 1}}
+                        >
                             <InputLabel>Notify Time</InputLabel>
-                            <Select value={notifyMinutes} onChange={(e) => setNotifyMinutes(e.target.value)}>
+                            <Select
+                                value={notifyMinutes}
+                                onChange={(e) => setNotifyMinutes(e.target.value)}
+                            >
                                 <MenuItem value="5">5 minutes before</MenuItem>
                                 <MenuItem value="10">10 minutes before</MenuItem>
                                 <MenuItem value="30">30 minutes before</MenuItem>
@@ -328,10 +362,10 @@ export default function UpdateEventPage() {
                         onClick={handleSubmit}
                         sx={{
                             mt: 3,
-                            bgcolor: 'black',
-                            color: 'white',
-                            '&:hover': {
-                                bgcolor: '#333',
+                            bgcolor: "black",
+                            color: "white",
+                            "&:hover": {
+                                bgcolor: "#333",
                             },
                         }}
                     >
@@ -342,7 +376,12 @@ export default function UpdateEventPage() {
                         variant="outlined"
                         fullWidth
                         onClick={handleShowQrCode}
-                        sx={{mt: 2, color: 'white', borderColor: 'white', '&:hover': {borderColor: 'gray'}}}
+                        sx={{
+                            mt: 2,
+                            color: "white",
+                            borderColor: "white",
+                            "&:hover": {borderColor: "gray"},
+                        }}
                     >
                         Show QR Code
                     </Button>
@@ -354,7 +393,7 @@ export default function UpdateEventPage() {
                                 aria-label="close"
                                 onClick={() => setShowQR(false)}
                                 sx={{
-                                    position: 'absolute',
+                                    position: "absolute",
                                     right: 8,
                                     top: 8,
                                     color: (theme) => theme.palette.grey[500],
@@ -363,8 +402,15 @@ export default function UpdateEventPage() {
                                 <CloseIcon/>
                             </IconButton>
                         </DialogTitle>
-                        <DialogContent dividers sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                            <img src={qrCodeDataUrl} alt="QR Code" style={{width: 200, height: 200}}/>
+                        <DialogContent
+                            dividers
+                            sx={{display: "flex", justifyContent: "center", alignItems: "center"}}
+                        >
+                            <img
+                                src={qrCodeDataUrl}
+                                alt="QR Code"
+                                style={{width: 200, height: 200}}
+                            />
                         </DialogContent>
                     </Dialog>
 
@@ -379,13 +425,18 @@ export default function UpdateEventPage() {
                     </Button>
                 </Box>
             </Box>
+
             <Snackbar
                 open={showError}
                 autoHideDuration={5000}
                 onClose={() => setShowError(false)}
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                anchorOrigin={{vertical: "bottom", horizontal: "center"}}
             >
-                <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                <Alert
+                    onClose={() => setShowError(false)}
+                    severity="error"
+                    sx={{width: "100%"}}
+                >
                     Activity update failed.
                 </Alert>
             </Snackbar>
