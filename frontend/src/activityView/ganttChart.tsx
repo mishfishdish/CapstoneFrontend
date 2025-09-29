@@ -8,14 +8,13 @@ import {useNavigate} from "react-router-dom";
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
-
 export interface ActivityResponse {
     activityId: string; // UUID as string
     activityTitle: string;
-    startTime: string | null; // ISO date string or null
+    startTime: string | null;
     endTime: string | null;
-    dependsOnEventId: string | null; // nullable UUID
-    type: "event" | "task"
+    dependsOnEventId: string | null;
+    type: "event" | "task";
 }
 
 export default function GanttChartPage() {
@@ -26,16 +25,15 @@ export default function GanttChartPage() {
     const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
     const [selectedClub, setSelectedClub] = useState<string>("");
 
-
     const handleEventClick = (event: any) => {
-        // Assuming event has an ID or type field to determine where to go
-        if (event.type === 'event') {
+        if (event.realType === 'event') {
             navigate(`${PAGE_UPDATE_EVENT}/?eventId=${event.id}`);
         } else if (event.type === 'task') {
             navigate(`${PAGE_UPDATE_TASK}?taskId=${event.id}`);
         }
     };
 
+    // Fetch clubs on mount
     useEffect(() => {
         async function fetchClubs() {
             try {
@@ -44,27 +42,27 @@ export default function GanttChartPage() {
                     const data = await response.json();
                     setClubOptions(data);
                     if (data.length > 0) {
-                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                        setSelectedClub(data[0].clubId);   // drive from state
+                        clubIdSignal.value = data[0].clubId; // optional global sync
                     }
                 } else {
                     setShowError(true);
-                    alert('Failed to fetch clubs');
                 }
-            } catch (err) {
+            } catch {
                 setShowError(true);
-                alert('Failed to fetch clubs');
             }
         }
 
         fetchClubs();
-    }, []); // Only runs on mount
+    }, []);
 
+    // Fetch activities when selectedClub changes
     useEffect(() => {
-        if (!clubIdSignal.value) return; // Don't fetch if clubId is empty or undefined
+        if (!selectedClub) return;
 
         async function fetchActivities() {
             try {
-                const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${clubIdSignal.value}`);
+                const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${selectedClub}`);
                 if (response.ok) {
                     const rawData = await response.json();
                     const parsed = rawData.map((activity: ActivityResponse): any => {
@@ -76,45 +74,43 @@ export default function GanttChartPage() {
 
                         let end = activity.endTime ? new Date(activity.endTime) : new Date(start);
                         if (end.getTime() === start.getTime()) {
-                            end = new Date(start.getTime() + 24 * 60 * 60 * 1000); // +1 day
+                            end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
                         }
                         return {
                             id: activity.activityId,
                             name: activity.activityTitle,
                             start,
                             end,
-                            type: activity.type === "task" ? "task" : "task", // gantt-task-react needs one of: task | project | milestone
+                            type: "task",
+                            realType: activity.type,
                             dependencies: activity.dependsOnEventId ? [activity.dependsOnEventId] : [],
                             progress: 0,
                         };
                     });
-                    setEvent(parsed);
+                    setEvent([...parsed]);
                 } else {
                     setShowError(true);
-                    alert('Failed to fetch activities');
                 }
-            } catch (err) {
+            } catch {
                 setShowError(true);
-                alert('Failed to fetch activities');
             }
         }
 
         fetchActivities();
-    }, [clubIdSignal.value]);
+    }, [selectedClub]);
 
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         const newClubId = event.target.value as string;
-        setSelectedClub(newClubId);
-        clubIdSignal.value = newClubId;
+        setSelectedClub(newClubId);      // React state drives UI
+        clubIdSignal.value = newClubId;  // optional global sync
     };
-
 
     return (
         <LayoutContainer>
             <Box
                 sx={{
                     minHeight: '100vh',
-                    pl: {xs: 0, md: '240px'}, // Space for sidebar (adjust as per actual sidebar width)
+                    pl: {xs: 0, md: '240px'},
                     pr: {xs: 2, md: 5},
                     py: {xs: 4, md: 6},
                     display: 'flex',
@@ -143,7 +139,7 @@ export default function GanttChartPage() {
                             onChange={handleChange as any}
                             label="Select Club"
                             sx={{
-                                minWidth: 250, // or whatever width you want
+                                minWidth: 250,
                                 bgcolor: 'rgba(255,255,255,0.08)',
                                 color: 'white',
                                 borderRadius: 2,
@@ -191,6 +187,7 @@ export default function GanttChartPage() {
                             }}
                         >
                             <Gantt
+                                key={selectedClub}
                                 onClick={handleEventClick}
                                 tasks={event as any}
                                 columnWidth={85}

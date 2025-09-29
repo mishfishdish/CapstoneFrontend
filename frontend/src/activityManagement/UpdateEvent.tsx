@@ -25,6 +25,8 @@ import {clubIdSignal, userIdSignal} from "../store/sessionSignal";
 import config from "../../config";
 import {PAGE_DELETE_SUCCESS, PAGE_UPDATE_SUCCESS} from "../PathConstants.tsx";
 import LayoutContainer from "../common/LayoutContainer.tsx";
+import QrScanner from 'qr-scanner';
+
 
 export interface ActivityResponse {
     activityId: string;
@@ -87,6 +89,7 @@ export default function UpdateEventPage() {
         fetchEvent();
     }, [searchParams]);
 
+
     // 2. Fetch clubs for logged-in user
     useEffect(() => {
         async function fetchClubs() {
@@ -132,6 +135,21 @@ export default function UpdateEventPage() {
 
         fetchEvents();
     }, [clubIdSignal.value]);
+
+    const [decoded, setDecoded] = useState<string | null>(null);
+
+    useEffect(() => {
+        let active = true;
+
+        (async () => {
+            const {data} = await QrScanner.scanImage(qrCodeDataUrl, {returnDetailedScanResult: true});
+            if (active) setDecoded(data);
+        })();
+
+        return () => {
+            active = false; // cleanup to avoid state update after unmount
+        };
+    }, [qrCodeDataUrl]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -411,6 +429,7 @@ export default function UpdateEventPage() {
                                 alt="QR Code"
                                 style={{width: 200, height: 200}}
                             />
+                            {decoded}
                         </DialogContent>
                     </Dialog>
 
