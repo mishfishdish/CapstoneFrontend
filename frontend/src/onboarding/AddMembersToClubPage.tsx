@@ -108,12 +108,12 @@ export default function AddMembersPage() {
                             />
                             <Select
                                 value={invitee.role}
-                                onChange={(e) => handleInviteChange(index, 'role', e.target.value as 'Member' | 'Admin')}
+                                onChange={(e) => handleInviteChange(index, 'role', e.target.value as 'MEMBER' | 'ADMIN')}
                                 variant="filled"
                                 sx={{width: 140, bgcolor: 'white', borderRadius: 1}}
                             >
-                                <MenuItem value="Member">Member</MenuItem>
-                                <MenuItem value="Admin">Admin&nbsp;&nbsp;&nbsp;</MenuItem>
+                                <MenuItem value="MEMBER">Member</MenuItem>
+                                <MenuItem value="ADMIN">Admin&nbsp;&nbsp;&nbsp;</MenuItem>
                             </Select>
                             {invitees.length > 1 && (
                                 <IconButton onClick={() => handleRemoveInvitee(index)}>
