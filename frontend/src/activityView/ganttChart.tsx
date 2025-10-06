@@ -87,6 +87,8 @@ export default function GanttChartPage() {
                             progress: 0,
                         };
                     });
+                    // Sort by start date before setting state
+                    parsed.sort((a, b) => a.start.getTime() - b.start.getTime());
                     setEvent([...parsed]);
                 } else {
                     setShowError(true);
