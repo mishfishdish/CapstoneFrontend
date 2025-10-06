@@ -1,5 +1,5 @@
-export const PAGE_LOGIN = '/login'
-export const PAGE_HOME = '/'
+export const PAGE_LOGIN = '/'
+export const PAGE_HOME = '/home'
 
 export const PAGE_ADD_MEMBER = '/addMember'
 export const PAGE_CLUB_SETTINGS = '/clubSettings'

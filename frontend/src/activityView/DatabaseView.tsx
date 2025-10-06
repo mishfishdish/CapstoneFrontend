@@ -17,7 +17,7 @@ import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
 export default function ActivityPage() {
     const [sort, setSort] = useState('Date');
-    const [selectedClub, setSelectedClub] = useState('All');
+    const [selectedClub, setSelectedClub] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [activities, setActivities] = useState<any[]>([]);
@@ -25,7 +25,7 @@ export default function ActivityPage() {
     const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
     const [showError, setShowError] = useState(false);
 
-
+    // Fetch user's clubs
     useEffect(() => {
         async function fetchClubs() {
             try {
@@ -33,8 +33,11 @@ export default function ActivityPage() {
                 if (response.ok) {
                     const data = await response.json();
                     setClubOptions(data);
+
                     if (data.length > 0) {
-                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                        const defaultClubId = data[0].clubId;
+                        setSelectedClub(defaultClubId);
+                        clubIdSignal.value = defaultClubId;
                     }
                 } else {
                     setShowError(true);
@@ -51,21 +54,26 @@ export default function ActivityPage() {
 
     // Fetch activities whenever dependencies change
     useEffect(() => {
+        if (!selectedClub) return; // Wait until a club is selected
+
         const fetchActivities = async () => {
             try {
-                // Prepare query params
+                // Determine sort parameter for backend
+                let sortParam = '';
+                if (sort === 'Date') sortParam = 'startTime,asc';
+                else if (sort === 'Title') sortParam = 'activityTitle,asc';
+
                 const params = new URLSearchParams({
-                    sort: sort.toLowerCase(), // e.g., 'date' or 'title'
-                    clubId: selectedClub === 'All' ? '' : selectedClub,
+                    clubId: selectedClub,
                     search: searchQuery,
-                    page: (page - 1).toString(), // backend expects 0-indexed
-                    size: '10'
+                    page: (page - 1).toString(),
+                    size: '10',
+                    sort: sortParam
                 });
 
                 const response = await fetch(`${config.apiBaseUrl}/clubs/activity?${params.toString()}`);
                 const data = await response.json();
 
-                // Assuming response is Spring Data Page format
                 setActivities(data.content || []);
                 setTotalPages(data.totalPages || 1);
             } catch (error) {
@@ -76,7 +84,6 @@ export default function ActivityPage() {
         fetchActivities();
     }, [sort, selectedClub, searchQuery, page]);
 
-    // @ts-ignore
     return (
         <LayoutContainer>
             <Box
@@ -106,7 +113,7 @@ export default function ActivityPage() {
                     }}
                 >
                     <Typography variant="h5" fontWeight="bold" mb={2}>
-                        Database view
+                        Compact list view
                     </Typography>
 
                     {/* Filters */}
@@ -138,29 +145,33 @@ export default function ActivityPage() {
                             </Select>
                         </FormControl>
 
-                        <FormControl variant="outlined">
-                            <InputLabel id="club-label" sx={{color: 'white'}}>Club</InputLabel>
-                            <Select
-                                labelId="club-label"
-                                value={selectedClub}
-                                onChange={(e) => setSelectedClub(e.target.value)}
-                                label="Club"
-                                sx={{
-                                    minWidth: 150,
-                                    bgcolor: 'rgba(255,255,255,0.08)',
-                                    color: 'white',
-                                    borderRadius: 2,
-                                    '.MuiSvgIcon-root': {color: 'white'},
-                                }}
-                            >
-                                <MenuItem value="All">All</MenuItem>
-                                {clubOptions.map((c) => (
-                                    <MenuItem key={c.clubId} value={c.clubId}>
-                                        {c.clubName}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        {clubOptions.length > 0 && (
+                            <FormControl variant="outlined">
+                                <InputLabel id="club-label" sx={{color: 'white'}}>Club</InputLabel>
+                                <Select
+                                    labelId="club-label"
+                                    value={selectedClub}
+                                    onChange={(e) => {
+                                        setSelectedClub(e.target.value);
+                                        clubIdSignal.value = e.target.value;
+                                    }}
+                                    label="Club"
+                                    sx={{
+                                        minWidth: 150,
+                                        bgcolor: 'rgba(255,255,255,0.08)',
+                                        color: 'white',
+                                        borderRadius: 2,
+                                        '.MuiSvgIcon-root': {color: 'white'},
+                                    }}
+                                >
+                                    {clubOptions.map((c) => (
+                                        <MenuItem key={c.clubId} value={c.clubId}>
+                                            {c.clubName}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        )}
                     </Box>
 
                     {/* Search */}
@@ -179,14 +190,7 @@ export default function ActivityPage() {
                     />
 
                     {/* Activity Cards */}
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                            mb: 3,
-                        }}
-                    >
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, mb: 3}}>
                         {activities.map((a) => (
                             <Box
                                 key={a.activityId}
@@ -228,6 +232,7 @@ export default function ActivityPage() {
                     </Box>
                 </Box>
             </Box>
+
             <Snackbar
                 open={showError}
                 autoHideDuration={5000}

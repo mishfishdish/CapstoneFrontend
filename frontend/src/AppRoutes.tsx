@@ -33,7 +33,7 @@ import ManualRegistrationPage from "./onboarding/ManualRegistrationPage.tsx";
 import CreateTaskPage from "./activityManagement/CreateTask.tsx";
 import CreateEventPage from "./activityManagement/CreateEvent.tsx";
 import CalendarViewPage from "./activityView/calendar.tsx";
-import GanttChartPage from "./activityView/ganttChart.tsx";
+import GanttChartPage from "./activityView/GanttChart.tsx";
 import TaskHomePage from "./activityView/HomePage.tsx";
 import UpdateEventPage from './activityManagement/UpdateEvent.tsx';
 import ActivityDeletePage from "./activityManagement/DeleteSuccess.tsx";

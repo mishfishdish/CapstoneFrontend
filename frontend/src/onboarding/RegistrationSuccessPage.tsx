@@ -1,6 +1,6 @@
 import {Box, Button, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
-import {PAGE_CLUB_SETTINGS} from "../PathConstants.tsx";
+import {PAGE_HOME} from "../PathConstants.tsx";
 
 export default function RegistrationSuccessPage() {
     const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function RegistrationSuccessPage() {
 
                 <Button
                     variant="contained"
-                    onClick={() => navigate(PAGE_CLUB_SETTINGS)}
+                    onClick={() => navigate(PAGE_HOME)}
                     sx={{
                         textTransform: 'none',
                         bgcolor: 'grey.900',

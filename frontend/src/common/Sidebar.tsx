@@ -26,7 +26,7 @@ const navItems = [
     {label: 'Home Dashboard', icon: <Home/>, path: PAGE_HOME},
     {label: 'Calendar', icon: <CalendarMonth/>, path: PAGE_CALENDAR},
     {label: 'Gantt Chart', icon: <Checklist/>, path: PAGE_GANTT},
-    {label: 'Database View', icon: <Description/>, path: PAGE_DATABASE},
+    {label: 'Compact View', icon: <Description/>, path: PAGE_DATABASE},
     {label: 'Analytic Reports', icon: <BarChart/>, path: MAIN_ANALYTICS},
     {label: 'Settings', icon: <Settings/>, path: PAGE_CLUB_SETTINGS},
 ];

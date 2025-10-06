@@ -1,5 +1,5 @@
 import {Alert, Box, FormControl, InputLabel, MenuItem, Select, Snackbar, Typography} from '@mui/material';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {Gantt, ViewMode} from 'gantt-task-react';
 import LayoutContainer from '../common/LayoutContainer.tsx';
 import 'gantt-task-react/dist/index.css';
@@ -17,19 +17,40 @@ export interface ActivityResponse {
     type: "event" | "task";
 }
 
+type TaskShape = {
+    id: string;
+    name: string;
+    start: Date;
+    end: Date;
+    type: "task" | "project" | "milestone";
+    realType?: "event" | "task";
+    dependencies?: string[];
+    progress?: number;
+    styles?: {
+        backgroundColor?: string;
+        backgroundSelectedColor?: string;
+        progressColor?: string;
+        progressSelectedColor?: string;
+    };
+    __sentinel__?: boolean;
+};
+
 export default function GanttChartPage() {
     const [view] = useState(ViewMode.Month);
     const navigate = useNavigate();
     const [showError, setShowError] = useState(false);
-    const [event, setEvent] = useState<ActivityResponse[]>([]);
+    const [activities, setActivities] = useState<ActivityResponse[]>([]);
     const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
     const [selectedClub, setSelectedClub] = useState<string>("");
 
-    const handleEventClick = (event: any) => {
-        if (event.realType === 'event') {
-            navigate(`${PAGE_UPDATE_EVENT}/?eventId=${event.id}`);
-        } else if (event.type === 'task') {
-            navigate(`${PAGE_UPDATE_TASK}?taskId=${event.id}`);
+    const handleEventClick = (task: TaskShape) => {
+        // Ignore sentinel tasks
+        if (task.__sentinel__) return;
+
+        if (task.realType === 'event') {
+            navigate(`${PAGE_UPDATE_EVENT}/?eventId=${task.id}`);
+        } else if (task.realType === 'task') {
+            navigate(`${PAGE_UPDATE_TASK}?taskId=${task.id}`);
         }
     };
 
@@ -42,8 +63,8 @@ export default function GanttChartPage() {
                     const data = await response.json();
                     setClubOptions(data);
                     if (data.length > 0) {
-                        setSelectedClub(data[0].clubId);   // drive from state
-                        clubIdSignal.value = data[0].clubId; // optional global sync
+                        setSelectedClub(data[0].clubId);
+                        clubIdSignal.value = data[0].clubId;
                     }
                 } else {
                     setShowError(true);
@@ -65,7 +86,7 @@ export default function GanttChartPage() {
                 const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${selectedClub}`);
                 if (response.ok) {
                     const rawData = await response.json();
-                    const parsed = rawData.map((activity: ActivityResponse): any => {
+                    const parsed: TaskShape[] = rawData.map((activity: ActivityResponse) => {
                         const start = activity.startTime
                             ? new Date(activity.startTime)
                             : activity.endTime
@@ -76,6 +97,7 @@ export default function GanttChartPage() {
                         if (end.getTime() === start.getTime()) {
                             end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
                         }
+
                         return {
                             id: activity.activityId,
                             name: activity.activityTitle,
@@ -87,7 +109,8 @@ export default function GanttChartPage() {
                             progress: 0,
                         };
                     });
-                    setEvent([...parsed]);
+                    // @ts-ignore
+                    setActivities(parsed);
                 } else {
                     setShowError(true);
                 }
@@ -101,9 +124,55 @@ export default function GanttChartPage() {
 
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         const newClubId = event.target.value as string;
-        setSelectedClub(newClubId);      // React state drives UI
-        clubIdSignal.value = newClubId;  // optional global sync
+        setSelectedClub(newClubId);
+        clubIdSignal.value = newClubId;
     };
+
+    // ----- Force timeline: 3 months before and 4 months after "now" -----
+    // @ts-ignore
+    const tasksForChart = useMemo<TaskShape[]>(() => {
+        if (!activities.length) return [];
+
+        const now = new Date();
+
+        // Start bound: first day of the month, 3 months ago
+        const startBound = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+
+        // End bound: last day of the month, 4 months ahead
+        const endBound = new Date(now.getFullYear(), 12, 1, 0, 0, 0, 0);
+
+        // Invisible sentinel tasks to enforce range
+        const sentinelStyle = {
+            backgroundColor: 'rgba(0,0,0,0)',
+            backgroundSelectedColor: 'rgba(0,0,0,0)',
+            progressColor: 'rgba(0,0,0,0)',
+            progressSelectedColor: 'rgba(0,0,0,0)',
+        };
+
+        const startSentinel: TaskShape = {
+            id: '__range_start__',
+            name: '',
+            start: startBound,
+            end: new Date(startBound.getTime() + 24 * 60 * 60 * 1000),
+            type: 'task',
+            progress: 0,
+            styles: sentinelStyle,
+            __sentinel__: true,
+        };
+
+        const endSentinel: TaskShape = {
+            id: '__range_end__',
+            name: '',
+            start: new Date(2026, 1, 1, 0, 0, 0, 0),   // March 1, 2026
+            end: new Date(2026, 1, 31, 23, 59, 59, 999), // March 31, 2026
+            type: 'task',
+            progress: 0,
+            styles: sentinelStyle,
+            __sentinel__: true,
+        };
+
+        return [startSentinel, ...activities, endSentinel];
+    }, [activities]);
 
     return (
         <LayoutContainer>
@@ -156,7 +225,7 @@ export default function GanttChartPage() {
                 </Box>
 
                 <Box sx={{display: 'flex', justifyContent: 'center'}}>
-                    {event.length > 0 ? (
+                    {tasksForChart.length > 0 ? (
                         <Box
                             sx={{
                                 bgcolor: 'rgba(255,255,255,0.06)',
@@ -166,31 +235,14 @@ export default function GanttChartPage() {
                                 width: '100%',
                                 maxWidth: 2000,
                                 overflowX: 'auto',
-                                '& canvas': {
-                                    background: 'white',
-                                },
-                                '& .bar-label': {
-                                    display: 'none',
-                                },
-                                '& .tooltip-text': {
-                                    display: 'none',
-                                },
-                                '& .gantt-container .task-list': {
-                                    display: 'none !important',
-                                },
-                                '& .gantt-container .task-list-header': {
-                                    display: 'none !important',
-                                },
-                                '& .calendar text': {
-                                    fontSize: '0.75rem',
-                                },
+                                '& .calendar text': {fontSize: '0.75rem'},
                             }}
                         >
                             <Gantt
                                 key={selectedClub}
-                                onClick={handleEventClick}
-                                tasks={event as any}
-                                columnWidth={85}
+                                onClick={handleEventClick as any}
+                                tasks={tasksForChart as any}
+                                columnWidth={65}
                                 viewMode={view}
                                 listCellWidth=""
                             />
@@ -202,6 +254,7 @@ export default function GanttChartPage() {
                     )}
                 </Box>
             </Box>
+
             <Snackbar
                 open={showError}
                 autoHideDuration={5000}
