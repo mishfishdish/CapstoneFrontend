@@ -46,9 +46,12 @@ export default function MultiClubComparisonPage() {
                 ];
                 const color = colors[idx % colors.length];
 
+                // ✅ Reverse the order of data points (chronological left → right)
+                const reversedData = [...club.attendanceLast12Months].reverse();
+
                 return {
                     label: club.clubName,
-                    data: club.attendanceLast12Months.map((m: any) => m.value),
+                    data: reversedData.map((m: any) => m.value),
                     borderColor: color,
                     backgroundColor: color.replace("1)", "0.2)"),
                     pointBackgroundColor: color,
@@ -57,11 +60,13 @@ export default function MultiClubComparisonPage() {
                 };
             });
 
-    const data = {
-        labels:
-            analytics[0]?.attendanceLast12Months?.map((m: any) => m.month) ?? [],
-        datasets,
-    };
+    // ✅ Reverse labels to match dataset order (chronological)
+    const labels =
+        analytics[0]?.attendanceLast12Months
+            ? [...analytics[0].attendanceLast12Months].reverse().map((m: any) => m.month)
+            : [];
+
+    const data = {labels, datasets};
 
     const options = {
         responsive: true,

@@ -11,7 +11,6 @@ import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-
 export default function AnalyticsPage() {
     const [analytics, setAnalytics] = useState<any[]>([]);
     const [clubOptions, setClubOptions] = useState<{ clubId: string; clubName: string }[]>([]);
@@ -60,13 +59,19 @@ export default function AnalyticsPage() {
     const tasks = selectedClubData?.tasks ?? {completed: 0, overdue: 0, ongoing: 0};
     const totalTasks = tasks.completed + tasks.overdue + tasks.ongoing;
 
-    // Chart data for last 12 months
+    // ✅ Reverse order for chronological (oldest → newest)
+    const reversedData =
+        selectedClubData?.attendanceLast12Months
+            ? [...selectedClubData.attendanceLast12Months].reverse()
+            : [];
+
+    // Chart data for last 12 months (chronological)
     const data = {
-        labels: selectedClubData?.attendanceLast12Months?.map((m: any) => m.month) ?? [],
+        labels: reversedData.map((m: any) => m.month),
         datasets: [
             {
                 label: `${selectedClubData?.clubName ?? ""} Attendance`,
-                data: selectedClubData?.attendanceLast12Months?.map((m: any) => m.value) ?? [],
+                data: reversedData.map((m: any) => m.value),
                 borderColor: "rgba(99, 132, 255, 1)",
                 backgroundColor: "rgba(99, 132, 255, 0.2)",
                 pointBackgroundColor: "rgba(99, 132, 255, 1)",
@@ -161,9 +166,7 @@ export default function AnalyticsPage() {
                                 borderRadius: 2,
                                 "&:hover": {bgcolor: "rgba(99,132,255,0.85)"},
                             }}
-                            onClick={() => {
-                                navigate(COMPARISON_ANALYTICS);
-                            }}
+                            onClick={() => navigate(COMPARISON_ANALYTICS)}
                         >
                             Multi-Comparison View
                         </Button>
