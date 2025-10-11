@@ -19,7 +19,7 @@ import LayoutContainer from '../common/LayoutContainer.tsx';
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {PAGE_CREATE_SUCCESS, PAGE_DELETE_SUCCESS} from "../PathConstants.tsx";
+import {PAGE_DELETE_SUCCESS, PAGE_UPDATE_SUCCESS} from "../PathConstants.tsx";
 
 export interface ActivityResponse {
     activityId: string; // UUID as string
@@ -135,7 +135,7 @@ export default function UpdateTaskPage() {
                     priority,
                     clubs,
                     dueDate,
-                    parentEvent,
+                    parentEventId: parentEvent,
                     notify,
                     completed,
                     ...(notifyMinutes != null && {
@@ -149,7 +149,7 @@ export default function UpdateTaskPage() {
             });
 
             if (response.ok) {
-                navigate(PAGE_CREATE_SUCCESS);
+                navigate(PAGE_UPDATE_SUCCESS);
             } else {
                 setShowError(true);
             }
@@ -161,7 +161,7 @@ export default function UpdateTaskPage() {
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(config.apiBaseUrl + '/tasks/' + searchParams.get('taskId'), {
+            const response = await fetch(config.apiBaseUrl + '/task/' + searchParams.get('taskId'), {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {

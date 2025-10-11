@@ -183,7 +183,7 @@ export default function ActivityPage() {
                         variant="outlined"
                         sx={{
                             mb: 3,
-                            input: {color: 'white'},
+                            input: {color: 'black'},
                             bgcolor: 'white',
                             borderRadius: 1,
                         }}

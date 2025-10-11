@@ -20,7 +20,8 @@ export default function SettingsPage() {
                 const response = await fetch(`${config.apiBaseUrl}/users/${userIdSignal.value}/clubs`);
                 if (response.ok) {
                     const data = await response.json();
-                    setClubs(data);
+                    const filtered = data.filter((res: { role: string; }) => res.role.toLowerCase() != "member")
+                    setClubs(filtered);
                 } else {
                     console.error('Failed to fetch clubs');
                 }

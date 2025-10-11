@@ -11,14 +11,13 @@ import config from "../../config.ts"; // update this import if needed
 
 type Invitee = {
     email: string;
-    role: 'MEMBER' | 'ADMIN';
+    role: 'Member' | 'Admin';
 };
 
 export default function AddMembersPage() {
     const navigate = useNavigate();
     const [invitees, setInvitees] = useState<Invitee[]>([
-        {email: '', role: 'MEMBER'},
-        {email: '', role: 'MEMBER'},
+        {email: '', role: 'Member'}
     ]);
     const [failedInvites, setFailedInvites] = useState<string[]>([]);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -34,7 +33,7 @@ export default function AddMembersPage() {
     };
 
     const handleAddInvitee = () => {
-        setInvitees([...invitees, {email: '', role: 'MEMBER'}]);
+        setInvitees([...invitees, {email: '', role: 'Member'}]);
     };
 
     const handleRemoveInvitee = (index: number) => {

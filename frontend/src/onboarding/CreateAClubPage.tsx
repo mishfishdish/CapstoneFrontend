@@ -171,8 +171,8 @@ export default function CreateClubPage() {
                                 variant="filled"
                                 sx={{width: 140, bgcolor: 'white', borderRadius: 1}}
                             >
-                                <MenuItem value="MEMBER">MEMBER</MenuItem>
-                                <MenuItem value="ADMIN">ADMIN</MenuItem>
+                                <MenuItem value="Member">Member</MenuItem>
+                                <MenuItem value="Admin">Admin</MenuItem>
                             </Select>
                             {invitees.length > 1 && (
                                 <IconButton onClick={() => handleRemoveInvitee(index)}>

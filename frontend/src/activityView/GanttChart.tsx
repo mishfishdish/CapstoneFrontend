@@ -110,6 +110,7 @@ export default function GanttChartPage() {
                         };
                     });
                     // @ts-ignore
+                    parsed.sort((a, b) => a.start.getTime() - b.start.getTime());
                     setActivities(parsed);
                 } else {
                     setShowError(true);

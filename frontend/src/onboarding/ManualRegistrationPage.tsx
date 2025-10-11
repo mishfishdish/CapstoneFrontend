@@ -4,9 +4,8 @@ import {Alert, Box, Button, Paper, Snackbar, TextField, Typography} from '@mui/m
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {PAGE_REGISTRATION_SUCCESS} from "../PathConstants.tsx";
 import config from "../../config.ts";
-import {userIdSignal} from ".././store/sessionSignal.ts";
+import {userIdSignal} from "../store/sessionSignal.ts";
 import {jwtDecode} from 'jwt-decode';
-
 
 export default function ManualRegistrationPage() {
     const navigate = useNavigate();
@@ -22,9 +21,9 @@ export default function ManualRegistrationPage() {
     const [showError, setShowError] = useState(false);
     const [clubId, setClubId] = useState('');
     const [tokenPresent, setTokenPresent] = useState(false);
-
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+
     useEffect(() => {
         if (token) {
             try {
@@ -43,15 +42,12 @@ export default function ManualRegistrationPage() {
                     role: decoded.role,
                     clubName: decoded.clubName,
                 }));
-
-
             } catch (err) {
                 setShowError(true);
                 alert('Could not decode token');
             }
         }
     }, [token]);
-
 
     const handleChange = (e: any) => {
         setFormData({...formData, [e.target.name]: e.target.value});
@@ -63,43 +59,35 @@ export default function ManualRegistrationPage() {
             const response = await fetch(config.apiBaseUrl + '/auth', {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData),
             });
 
-
             if (response.ok) {
-                const data = await response.json(); // ⬅️ Parse JSON response
-                userIdSignal.value = data.userId
+                const data = await response.json();
+                userIdSignal.value = data.userId;
 
                 if (tokenPresent) {
                     const clubResponse = await fetch(config.apiBaseUrl + '/clubs/user', {
                         method: 'POST',
                         credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             clubId,
                             email: formData.email,
-                            role: formData.email
+                            role: formData.role, // fixed (previously incorrect)
                         }),
                     });
+
                     if (clubResponse.ok) {
                         navigate(PAGE_REGISTRATION_SUCCESS);
-
                     } else {
                         setShowError(true);
                         alert('Registration failed.');
                     }
                 } else {
                     navigate(PAGE_REGISTRATION_SUCCESS);
-
                 }
-
-
             } else {
                 setShowError(true);
             }
@@ -109,20 +97,25 @@ export default function ManualRegistrationPage() {
         }
     };
 
-
     return (
         <Box
             sx={{
-                minHeight: '100vh',
-                background: '#3c4a5d',
+                position: 'fixed',       // ensures full-viewport coverage
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                px: 2,
-                backgroundImage: `url('/background.svg')`, // optional: your illustration here
+                backgroundColor: '#3c4a5d', // consistent dark background
+                backgroundImage: `url('/background.svg')`, // optional texture/graphic
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right center',
                 backgroundSize: 'contain',
+                px: 2,
+                overflow: 'hidden',
+                zIndex: 0,
             }}
         >
             <Paper
@@ -167,43 +160,62 @@ export default function ManualRegistrationPage() {
                             />
                         </>
                     )}
-                    <TextField fullWidth label="Email" variant="outlined" margin="normal" name="email"
-                               value={formData.email}
-                               InputProps={{
-                                   readOnly: tokenPresent
-                               }}
-                               onChange={handleChange}/>
-                    <TextField fullWidth label="Firstname" variant="outlined" margin="normal" name="firstname"
-                               value={formData.firstname}
-                               onChange={handleChange}/>
-                    <TextField fullWidth label="Lastname" variant="outlined" margin="normal" name="lastname"
-                               value={formData.lastname}
-                               onChange={handleChange}/>
-                    <TextField fullWidth label="Username" variant="outlined" margin="normal" name="username"
-                               value={formData.username}
-                               onChange={handleChange}/>
-                    <TextField fullWidth label="Password" variant="outlined" type="password" margin="normal"
-                               name="password"
-                               value={formData.password}
-                               onChange={handleChange}/>
+
+                    <TextField
+                        fullWidth
+                        label="Email"
+                        variant="outlined"
+                        margin="normal"
+                        name="email"
+                        value={formData.email}
+                        InputProps={{readOnly: tokenPresent}}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Firstname"
+                        variant="outlined"
+                        margin="normal"
+                        name="firstname"
+                        value={formData.firstname}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Lastname"
+                        variant="outlined"
+                        margin="normal"
+                        name="lastname"
+                        value={formData.lastname}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        variant="outlined"
+                        type="password"
+                        margin="normal"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
 
                     <Button
                         fullWidth
                         variant="contained"
-                        onClick={e => handleRegister(e)} //
+                        onClick={handleRegister}
                         sx={{
                             mt: 2,
                             textTransform: 'none',
                             bgcolor: 'grey.900',
-                            '&:hover': {
-                                bgcolor: 'grey.800',
-                            },
+                            '&:hover': {bgcolor: 'grey.800'},
                         }}
                     >
                         Register
                     </Button>
                 </form>
             </Paper>
+
             <Snackbar
                 open={showError}
                 autoHideDuration={5000}

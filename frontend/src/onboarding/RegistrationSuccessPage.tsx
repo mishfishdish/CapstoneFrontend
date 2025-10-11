@@ -8,21 +8,31 @@ export default function RegistrationSuccessPage() {
     return (
         <Box
             sx={{
-                minHeight: '100vh',
-                background: '#3c4a5d', // matches other screens
+                position: 'fixed',          // ensures it covers the whole viewport
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: '#3c4a5d', // consistent with your theme
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 px: 2,
                 textAlign: 'center',
+                overflow: 'hidden',
+                zIndex: 0,                  // keeps it behind modal elements if any
             }}
         >
             <Box sx={{mt: 0}}>
                 <img
-                    src="/teamSuccess.png" // ensure this is inside public/
+                    src="/teamSuccess.png"
                     alt="Success Illustration"
-                    style={{width: '280px', marginBottom: '2rem'}}
+                    style={{
+                        width: '280px',
+                        marginBottom: '2rem',
+                        maxWidth: '90vw',
+                    }}
                 />
                 <Typography variant="h6" sx={{color: 'white', mb: 4}}>
                     You’re officially registered with <br/>
