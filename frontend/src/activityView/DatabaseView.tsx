@@ -125,26 +125,6 @@ export default function ActivityPage() {
                             mb: 3,
                         }}
                     >
-                        <FormControl variant="outlined">
-                            <InputLabel id="sort-label" sx={{color: 'white'}}>Sort</InputLabel>
-                            <Select
-                                labelId="sort-label"
-                                value={sort}
-                                onChange={(e) => setSort(e.target.value)}
-                                label="Sort"
-                                sx={{
-                                    minWidth: 150,
-                                    bgcolor: 'rgba(255,255,255,0.08)',
-                                    color: 'white',
-                                    borderRadius: 2,
-                                    '.MuiSvgIcon-root': {color: 'white'},
-                                }}
-                            >
-                                <MenuItem value="Date">Date</MenuItem>
-                                <MenuItem value="Title">Title</MenuItem>
-                            </Select>
-                        </FormControl>
-
                         {clubOptions.length > 0 && (
                             <FormControl variant="outlined">
                                 <InputLabel id="club-label" sx={{color: 'white'}}>Club</InputLabel>
