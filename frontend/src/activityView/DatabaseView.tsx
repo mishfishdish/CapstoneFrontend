@@ -16,7 +16,7 @@ import config from '../../config';
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 
 export default function ActivityPage() {
-    const [sort, setSort] = useState('Date');
+    const [sort] = useState('Date');
     const [selectedClub, setSelectedClub] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);

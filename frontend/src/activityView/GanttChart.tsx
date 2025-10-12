@@ -111,7 +111,7 @@ export default function GanttChartPage() {
                     });
                     // @ts-ignore
                     parsed.sort((a, b) => a.start.getTime() - b.start.getTime());
-                    setActivities(parsed);
+                    setActivities(parsed as any);
                 } else {
                     setShowError(true);
                 }
@@ -140,7 +140,6 @@ export default function GanttChartPage() {
         const startBound = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
         // End bound: last day of the month, 4 months ahead
-        const endBound = new Date(now.getFullYear(), 12, 1, 0, 0, 0, 0);
 
         // Invisible sentinel tasks to enforce range
         const sentinelStyle = {

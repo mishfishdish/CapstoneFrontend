@@ -55,8 +55,11 @@ export default function CalendarViewPage() {
                 if (response.ok) {
                     const data = await response.json();
                     setClubOptions(data);
+
                     if (data.length > 0) {
-                        clubIdSignal.value = data[0].clubId; // Set signal, triggers second useEffect
+                        const defaultClubId = data[0].clubId;
+                        setSelectedClub(defaultClubId);
+                        clubIdSignal.value = defaultClubId;
                     }
                 } else {
                     setShowError(true);
@@ -79,8 +82,6 @@ export default function CalendarViewPage() {
                 const response = await fetch(`${config.apiBaseUrl}/clubs/activity?clubId=${clubIdSignal.value}`);
                 if (response.ok) {
                     const rawData = await response.json();
-                    console.log("raw");
-                    console.log(rawData);
                     // @ts-ignore
                     const parsed = rawData.map((activity: ActivityResponse): any => ({
                         ...activity,
