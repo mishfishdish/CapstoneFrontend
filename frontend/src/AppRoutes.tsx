@@ -48,6 +48,7 @@ import DatabaseView from './activityView/DatabaseView.tsx';
 import MassImportPage from "./activityManagement/MassImport.tsx";
 import AnalyticsPage from "./analytics/MainAnalyticsReport.tsx";
 import MultiClubComparisonPage from "./analytics/ComparisonAnalyticsReport.tsx";
+import AttendanceReportPage from './analytics/AttendanceReports.tsx';
 
 
 export default function AppRoutes() {
@@ -76,6 +77,7 @@ export default function AppRoutes() {
             <Route path={PAGE_MASS_IMPORT} element={<MassImportPage/>}/>
             <Route path={MAIN_ANALYTICS} element={<AnalyticsPage/>}/>
             <Route path={COMPARISON_ANALYTICS} element={<MultiClubComparisonPage/>}/>
+            <Route path={'/TEST'} element={<AttendanceReportPage/>}/>
 
 
         </Routes>

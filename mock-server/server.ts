@@ -22,12 +22,15 @@ import {
     createTasksHandler,
     deleteEventsHandler,
     deleteTaskHandler,
-    importActivityHandler,
     updateEventsHandler,
     updateTaskHandler
 } from "./handlers/activityManagement/ActivityManagementHandlers.ts";
+
 import {eventRegistrationHandler} from "./handlers/attendance/AttendanceHandlers.ts";
 import {analyticsHandler} from "./handlers/analytics/AnalyticsHandlers.ts";
+
+import {attendanceReportHandler} from "./handlers/attendance/AttendanceHandlers.ts";
+
 
 
 const app = express()
@@ -64,13 +67,15 @@ app.delete('/api/events/:eventId', deleteEventsHandler)
 app.put('/api/events/:eventId', updateEventsHandler)
 app.delete('/api/tasks/:taskId', deleteTaskHandler)
 app.put('/api/tasks/:tasksId', updateTaskHandler)
-app.post('/api/import', importActivityHandler)
 
 
 //attendance
 app.post('/api/attendance/:eventId', eventRegistrationHandler);
 app.get('/api/homeview/:userId', homeViewHandler)
+
 app.get('/api/clubs/analytic/:userId', analyticsHandler)
+
+app.get('/api/attendance/:eventId', attendanceReportHandler)
 
 // Start the server
 app.listen(PORT, () => {
