@@ -170,6 +170,20 @@ export default function AnalyticsPage() {
                         >
                             Multi-Comparison View
                         </Button>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                bgcolor: "rgba(99,132,255,1)",
+                                textTransform: "none",
+                                borderRadius: 2,
+                                "&:hover": {bgcolor: "rgba(99,132,255,0.85)"},
+                            }}
+                            onClick={() => {
+                                navigate('/TEST')
+                            }}
+                        >
+                            Attendance Reports
+                        </Button>
                     </Box>
                 </Box>
 
