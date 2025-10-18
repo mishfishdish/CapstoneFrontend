@@ -75,7 +75,7 @@ export default function ManualRegistrationPage() {
                         body: JSON.stringify({
                             clubId,
                             email: formData.email,
-                            role: formData.role, // fixed (previously incorrect)
+                            role: formData.role,
                         }),
                     });
 
@@ -88,14 +88,19 @@ export default function ManualRegistrationPage() {
                 } else {
                     navigate(PAGE_REGISTRATION_SUCCESS);
                 }
+            } else if (response.status === 409) {
+                setShowError(true);
+                alert('User already exists. Please log in instead.');
             } else {
                 setShowError(true);
+                alert('Registration failed.');
             }
         } catch (error) {
             setShowError(true);
             alert('Registration failed.');
         }
     };
+
 
     return (
         <Box
