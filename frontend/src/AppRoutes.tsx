@@ -2,6 +2,7 @@ import {Route, Routes} from 'react-router-dom';
 import RegistrationSuccessPage from "./onboarding/RegistrationSuccessPage.tsx";
 import {
     ATTENDANCE_PAGE,
+    ATTENDANCE_REPORTS,
     ATTENDANCE_SUCCESS,
     COMPARISON_ANALYTICS,
     MAIN_ANALYTICS,
@@ -77,7 +78,7 @@ export default function AppRoutes() {
             <Route path={PAGE_MASS_IMPORT} element={<MassImportPage/>}/>
             <Route path={MAIN_ANALYTICS} element={<AnalyticsPage/>}/>
             <Route path={COMPARISON_ANALYTICS} element={<MultiClubComparisonPage/>}/>
-            <Route path={'/TEST'} element={<AttendanceReportPage/>}/>
+            <Route path={ATTENDANCE_REPORTS} element={<AttendanceReportPage/>}/>
 
 
         </Routes>

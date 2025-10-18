@@ -19,14 +19,14 @@ import LayoutContainer from '../common/LayoutContainer.tsx';
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
 import {useNavigate} from "react-router-dom";
-import {PAGE_CREATE_SUCCESS} from "../PathConstants.tsx";
+import {PAGE_CLUB_SETTINGS, PAGE_CREATE_SUCCESS} from "../PathConstants.tsx";
 
 export interface ActivityResponse {
-    activityId: string; // UUID as string
+    activityId: string;
     activityTitle: string;
-    startTime: string | null; // ISO date string or null
+    startTime: string | null;
     endTime: string | null;
-    dependsOnEventId: string | null; // nullable UUID
+    dependsOnEventId: string | null;
 }
 
 export default function CreateEventPage() {
@@ -44,7 +44,7 @@ export default function CreateEventPage() {
     const [showError, setShowError] = useState(false);
     const navigate = useNavigate();
 
-
+    // ✅ Fetch clubs user belongs to
     useEffect(() => {
         async function fetchClubs() {
             try {
@@ -65,7 +65,9 @@ export default function CreateEventPage() {
         fetchClubs();
     }, []);
 
+    // ✅ Fetch events when clubIdSignal.value changes
     useEffect(() => {
+        if (!clubIdSignal.value) return;
 
         async function fetchEvents() {
             try {
@@ -83,9 +85,8 @@ export default function CreateEventPage() {
             }
         }
 
-        fetchEvents()
-    }, [clubIdSignal]);
-
+        fetchEvents();
+    }, [clubIdSignal.value]); // 👈 track the value directly
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
@@ -93,9 +94,7 @@ export default function CreateEventPage() {
             const response = await fetch(config.apiBaseUrl + '/events', {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     startTime: startDate,
                     endTime: endDate,
@@ -108,16 +107,14 @@ export default function CreateEventPage() {
                         notification: {
                             userId: userIdSignal.value,
                             notifyBeforeMinutes: notifyMinutes,
-                        }
+                        },
                     }),
-                    userId: userIdSignal.value
+                    userId: userIdSignal.value,
                 }),
             });
 
             if (response.ok) {
-                navigate(PAGE_CREATE_SUCCESS)
-
-
+                navigate(PAGE_CREATE_SUCCESS);
             } else {
                 setShowError(true);
             }
@@ -139,150 +136,176 @@ export default function CreateEventPage() {
                     px: 2,
                 }}
             >
-                <Box
-                    sx={{
-                        width: '100%',
-                        maxWidth: 600,
-                        p: 4,
-                        borderRadius: 4,
-                        bgcolor: 'rgba(255,255,255,0.08)',
-                        backdropFilter: 'blur(16px)',
-                        color: 'white',
-                        boxShadow: '0px 4px 20px rgba(0,0,0,0.3)',
-                    }}
-                >
-                    <Typography variant="h5" gutterBottom fontWeight={600}>
-                        Create a new event
-                    </Typography>
-
-                    <Typography fontSize={14} fontWeight={500}>
-                        Start Date
-                    </Typography>
-                    <DateTimePicker
-                        value={startDate}
-                        onChange={setStartDate}
-                        sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
-                    />
-
-                    <Typography fontSize={14} fontWeight={500}>
-                        End Date
-                    </Typography>
-                    <DateTimePicker
-                        value={endDate}
-                        onChange={setEndDate}
-                        sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Event Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Event Location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
-                    />
-
-                    <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
-                        <InputLabel>Clubs involved</InputLabel>
-                        <Select
-                            labelId="club-select-label"
-                            multiple
-                            value={clubs}
-                            onChange={(e) => {
-                                setClubs(e.target.value as string[]);
-
-                            }}
-                            renderValue={(selected) =>
-                                selected
-                                    .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
-                                    .join(', ')
-                            }
-                        >
-                            {clubOptions.map((club) => (
-                                <MenuItem key={club.clubId} value={club.clubId}>
-                                    <Checkbox checked={clubs.includes(club.clubId)}/>
-                                    <ListItemText primary={club.clubName}/>
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-
-                    <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
-                        <InputLabel>Parent Event</InputLabel>
-                        <Select
-                            value={parentEvent}
-                            onChange={(e) => setParentEvent(e.target.value)}
-                        >
-                            {eventOptions.map((activity: ActivityResponse) => (
-                                <MenuItem key={activity.activityId} value={activity.activityId}>
-                                    {activity.activityTitle}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-
-                    <TextField
-                        fullWidth
-                        label="Event Description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        multiline
-                        minRows={3}
-                        variant="filled"
-                        sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
-                    />
-
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={notify}
-                                onChange={(e) => setNotify(e.target.checked)}
-                                sx={{color: 'white'}}
-                            />
-                        }
-                        label="Notify Event Via Email"
-                    />
-
-                    {notify && (
-                        <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
-                            <InputLabel>Notify Time</InputLabel>
-                            <Select
-                                value={notifyMinutes}
-                                onChange={(e) => setNotifyMinutes(e.target.value)}
-                            >
-                                <MenuItem value="5">5 minutes before</MenuItem>
-                                <MenuItem value="10">10 minutes before</MenuItem>
-                                <MenuItem value="30">30 minutes before</MenuItem>
-                            </Select>
-                        </FormControl>
-                    )}
-
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        onClick={handleSubmit}
+                {clubOptions.length === 0 ? (
+                    // ✅ Show message if user is not part of any clubs
+                    <Box
                         sx={{
-                            mt: 3,
-                            bgcolor: 'black',
+                            width: '100%',
+                            maxWidth: 600,
+                            p: 4,
+                            borderRadius: 4,
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            backdropFilter: 'blur(16px)',
                             color: 'white',
-                            '&:hover': {
-                                bgcolor: '#333',
-                            },
+                            boxShadow: '0px 4px 20px rgba(0,0,0,0.3)',
+                            textAlign: 'center',
                         }}
                     >
-                        Create event
-                    </Button>
-                </Box>
+                        <Typography variant="h5" fontWeight={600} gutterBottom>
+                            You are not part of any clubs.
+                        </Typography>
+                        <Typography variant="body1" sx={{mb: 2}}>
+                            Join a club first before creating an event.
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                bgcolor: 'black',
+                                color: 'white',
+                                '&:hover': {bgcolor: '#333'},
+                            }}
+                            onClick={() => navigate(PAGE_CLUB_SETTINGS)}
+                        >
+                            Go to Clubs Page
+                        </Button>
+                    </Box>
+                ) : (
+                    // ✅ Show event creation form
+                    <Box
+                        sx={{
+                            width: '100%',
+                            maxWidth: 600,
+                            p: 4,
+                            borderRadius: 4,
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            backdropFilter: 'blur(16px)',
+                            color: 'white',
+                            boxShadow: '0px 4px 20px rgba(0,0,0,0.3)',
+                        }}
+                    >
+                        <Typography variant="h5" gutterBottom fontWeight={600}>
+                            Create a new event
+                        </Typography>
+
+                        <Typography fontSize={14} fontWeight={500}>
+                            Start Date
+                        </Typography>
+                        <DateTimePicker
+                            value={startDate}
+                            onChange={setStartDate}
+                            sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
+                        />
+
+                        <Typography fontSize={14} fontWeight={500}>
+                            End Date
+                        </Typography>
+                        <DateTimePicker
+                            value={endDate}
+                            onChange={setEndDate}
+                            sx={{my: 2, width: '100%', bgcolor: 'white', borderRadius: 1}}
+                        />
+
+                        <TextField
+                            fullWidth
+                            label="Event Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            variant="filled"
+                            sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        />
+
+                        <TextField
+                            fullWidth
+                            label="Event Location"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            variant="filled"
+                            sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        />
+
+                        <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                            <InputLabel>Clubs involved</InputLabel>
+                            <Select
+                                labelId="club-select-label"
+                                multiple
+                                value={clubs}
+                                onChange={(e) => setClubs(e.target.value as string[])}
+                                renderValue={(selected) =>
+                                    selected
+                                        .map((clubId) => clubOptions.find((c) => c.clubId === clubId)?.clubName || clubId)
+                                        .join(', ')
+                                }
+                            >
+                                {clubOptions.map((club) => (
+                                    <MenuItem key={club.clubId} value={club.clubId}>
+                                        <Checkbox checked={clubs.includes(club.clubId)}/>
+                                        <ListItemText primary={club.clubName}/>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                            <InputLabel>Parent Event</InputLabel>
+                            <Select value={parentEvent} onChange={(e) => setParentEvent(e.target.value)}>
+                                {eventOptions.map((activity: ActivityResponse) => (
+                                    <MenuItem key={activity.activityId} value={activity.activityId}>
+                                        {activity.activityTitle}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <TextField
+                            fullWidth
+                            label="Event Description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            multiline
+                            minRows={3}
+                            variant="filled"
+                            sx={{my: 2, bgcolor: 'white', borderRadius: 1}}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={notify}
+                                    onChange={(e) => setNotify(e.target.checked)}
+                                    sx={{color: 'white'}}
+                                />
+                            }
+                            label="Notify Event Via Email"
+                        />
+
+                        {notify && (
+                            <FormControl fullWidth variant="filled" sx={{my: 2, bgcolor: 'white', borderRadius: 1}}>
+                                <InputLabel>Notify Time</InputLabel>
+                                <Select value={notifyMinutes} onChange={(e) => setNotifyMinutes(e.target.value)}>
+                                    <MenuItem value="5">5 minutes before</MenuItem>
+                                    <MenuItem value="10">10 minutes before</MenuItem>
+                                    <MenuItem value="30">30 minutes before</MenuItem>
+                                </Select>
+                            </FormControl>
+                        )}
+
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            onClick={handleSubmit}
+                            sx={{
+                                mt: 3,
+                                bgcolor: 'black',
+                                color: 'white',
+                                '&:hover': {bgcolor: '#333'},
+                            }}
+                        >
+                            Create event
+                        </Button>
+                    </Box>
+                )}
             </Box>
+
             <Snackbar
                 open={showError}
                 autoHideDuration={5000}

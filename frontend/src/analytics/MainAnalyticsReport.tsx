@@ -4,7 +4,7 @@ import {Line} from "react-chartjs-2";
 import LayoutContainer from "../common/LayoutContainer.tsx";
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {COMPARISON_ANALYTICS} from "../PathConstants.tsx";
+import {ATTENDANCE_REPORTS, COMPARISON_ANALYTICS} from "../PathConstants.tsx";
 import {People} from "@mui/icons-material";
 import config from "../../config.ts";
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
                                 "&:hover": {bgcolor: "rgba(99,132,255,0.85)"},
                             }}
                             onClick={() => {
-                                navigate('/TEST')
+                                navigate(ATTENDANCE_REPORTS)
                             }}
                         >
                             Attendance Reports
