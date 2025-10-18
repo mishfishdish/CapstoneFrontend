@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import {
     Alert,
     Box,
@@ -13,14 +13,13 @@ import {
 } from '@mui/material';
 import LayoutContainer from '../common/LayoutContainer';
 import config from '../../config';
-import { clubIdSignal } from "../store/sessionSignal.ts";
+import {clubIdSignal} from "../store/sessionSignal.ts";
 
 export default function AttendanceReportPage() {
     const [selectedEvent, setSelectedEvent] = useState('');
     const [eventOptions, setEventOptions] = useState<{ activityId: string; activityTitle: string }[]>([]);
     const [attendees, setAttendees] = useState<{ firstName: string; lastName: string; memberType: string }[]>([]);
     const [showError, setShowError] = useState(false);
-
 
     // Fetch user's clubs
     useEffect(() => {
@@ -79,9 +78,9 @@ export default function AttendanceReportPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     minHeight: '100vh',
-                    ml: { xs: 0, md: '240px' },
-                    px: { xs: 2, md: 4 },
-                    py: { xs: 4, md: 6 },
+                    ml: {xs: 0, md: '240px'},
+                    px: {xs: 2, md: 4},
+                    py: {xs: 4, md: 6},
                     flexGrow: 1,
                 }}
             >
@@ -91,7 +90,7 @@ export default function AttendanceReportPage() {
                         flexGrow: 1,
                         bgcolor: 'rgba(255,255,255,0.06)',
                         borderRadius: 4,
-                        p: { xs: 2, md: 4 },
+                        p: {xs: 2, md: 4},
                         backdropFilter: 'blur(12px)',
                         boxShadow: '0 0 20px rgba(0,0,0,0.2)',
                         display: 'flex',
@@ -106,7 +105,7 @@ export default function AttendanceReportPage() {
                     {/* Event dropdown */}
                     {eventOptions.length > 0 && (
                         <FormControl variant="outlined">
-                            <InputLabel id="club-label" sx={{ color: 'white' }}>Events</InputLabel>
+                            <InputLabel id="club-label" sx={{color: 'white'}}>Events</InputLabel>
                             <Select
                                 labelId="club-label"
                                 value={selectedEvent}
@@ -119,7 +118,7 @@ export default function AttendanceReportPage() {
                                     bgcolor: 'rgba(255,255,255,0.08)',
                                     color: 'white',
                                     borderRadius: 2,
-                                    '.MuiSvgIcon-root': { color: 'white' },
+                                    '.MuiSvgIcon-root': {color: 'white'},
                                 }}
                             >
                                 {eventOptions.map((c) => (
@@ -133,63 +132,64 @@ export default function AttendanceReportPage() {
 
                     {/* Attendee cards */}
                     <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                    }}
-                    >
-                    {attendees.length === 0 ? (
-                        <Typography>No attendees found.</Typography>
-                    ) : (
-                        attendees.map((attendee, index) => (
-                        <Box
-                            key={index}
-                            sx={{
+                        sx={{
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            flexDirection: 'column',
                             gap: 2,
-                            width: '100%',
-                            }}
-                        >
-                            <Card
-                            sx={{
-                                flex: 1,
-                                bgcolor: 'rgba(255,255,255,0.1)',
-                                color: 'white',
-                                borderRadius: 2,
-                            }}
-                            >
-                            <CardContent>
-                                <Typography variant="h6" fontWeight="bold">
-                                {attendee.firstName} {attendee.lastName}
-                                </Typography>
-                            </CardContent>
-                            
-                            <CardContent>
-                                <Typography variant="body1" fontWeight="bold">
-                                {attendee.memberType}
-                                </Typography>
-                            </CardContent>
-                            </Card>
-                        </Box>
-                        ))
-                    )
-                    
-
+                        }}
+                    >
+                        {attendees.length === 0 ? (
+                            <Typography>No attendees found.</Typography>
+                        ) : (
+                            attendees.map((attendee, index) => (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        gap: 2,
+                                        width: '100%',
+                                    }}
+                                >
+                                    <Card
+                                        sx={{
+                                            flex: 1,
+                                            bgcolor: 'rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            borderRadius: 2,
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <CardContent>
+                                            <Typography variant="h6" fontWeight="bold">
+                                                {attendee.firstName} {attendee.lastName}
+                                            </Typography>
+                                        </CardContent>
+                                        <CardContent sx={{textAlign: 'center'}}>
+                                            <Typography variant="h6">
+                                                {attendee.memberType}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                </Box>
+                            ))
+                        )}
+                    </Box>
                 </Box>
-            </Box>
 
-            <Snackbar
-                open={showError}
-                autoHideDuration={5000}
-                onClose={() => setShowError(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setShowError(false)} severity="error" sx={{ width: '100%' }}>
-                    Failed to load attendance report.
-                </Alert>
-            </Snackbar>
+                <Snackbar
+                    open={showError}
+                    autoHideDuration={5000}
+                    onClose={() => setShowError(false)}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                >
+                    <Alert onClose={() => setShowError(false)} severity="error" sx={{width: '100%'}}>
+                        Failed to load attendance report.
+                    </Alert>
+                </Snackbar>
+            </Box>
         </LayoutContainer>
     );
 }
