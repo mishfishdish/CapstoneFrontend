@@ -40,7 +40,7 @@ import ActivityDeletePage from "./activityManagement/DeleteSuccess.tsx";
 import ActivitySuccessPage from "./activityManagement/CreateSuccess.tsx";
 import ActivityUpdatePage from "./activityManagement/UpdateSuccess.tsx";
 // @ts-ignore
-import CreateActivityLandingPage from './activityManagement/createActivity.tsx';
+import CreateActivityLandingPage from './activityManagement/CreateActivity.tsx';
 import UpdateTaskPage from "./activityManagement/UpdateTask.tsx";
 import EventSuccessPage from "./attendance/EventSuccessPage.tsx";
 import EventRegistrationForm from "./attendance/EventRegistrationForm.tsx";
