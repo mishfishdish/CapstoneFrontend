@@ -11,8 +11,8 @@ export default function ManualRegistrationPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
-        firstname: '',
-        lastname: '',
+        firstName: '',
+        lastName: '',
         username: '',
         password: '',
         role: '',
@@ -178,20 +178,20 @@ export default function ManualRegistrationPage() {
                     />
                     <TextField
                         fullWidth
-                        label="Firstname"
+                        label="firstName"
                         variant="outlined"
                         margin="normal"
-                        name="firstname"
-                        value={formData.firstname}
+                        name="firstName"
+                        value={formData.firstName}
                         onChange={handleChange}
                     />
                     <TextField
                         fullWidth
-                        label="Lastname"
+                        label="lastName"
                         variant="outlined"
                         margin="normal"
-                        name="lastname"
-                        value={formData.lastname}
+                        name="lastName"
+                        value={formData.lastName}
                         onChange={handleChange}
                     />
                     <TextField
