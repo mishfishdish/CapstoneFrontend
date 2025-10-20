@@ -14,9 +14,13 @@ import {
 import LayoutContainer from '../common/LayoutContainer';
 import config from '../../config';
 import {clubIdSignal, userIdSignal} from "../store/sessionSignal.ts";
+import {useNavigate} from "react-router-dom";
+import {PAGE_UPDATE_EVENT, PAGE_UPDATE_TASK} from "../PathConstants.tsx";
 
 export default function ActivityPage() {
     const [sort] = useState('Date');
+    const navigate = useNavigate();
+
     const [selectedClub, setSelectedClub] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
@@ -174,12 +178,26 @@ export default function ActivityPage() {
                         {activities.map((a) => (
                             <Box
                                 key={a.activityId}
+                                onClick={() => {
+                                    // Assuming backend provides a field "activityType" = 'event' or 'task'
+                                    if (a.type === 'event') {
+                                        navigate(`${PAGE_UPDATE_EVENT}/?eventId=${a.activityId}`);
+                                    } else if (a.type === 'task') {
+                                        navigate(`${PAGE_UPDATE_TASK}?taskId=${a.activityId}`);
+                                    }
+                                }}
                                 sx={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     bgcolor: 'rgba(255,255,255,0.1)',
                                     borderRadius: 2,
                                     p: 2,
+                                    cursor: 'pointer',
+                                    transition: '0.3s',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,0.2)',
+                                        transform: 'scale(1.01)',
+                                    },
                                 }}
                             >
                                 <Typography fontWeight="bold">{a.activityTitle}</Typography>
